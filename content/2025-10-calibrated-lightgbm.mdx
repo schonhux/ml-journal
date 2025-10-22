@@ -1,0 +1,16 @@
+---
+title: "Calibrated Probabilities in LightGBM for Real-Time Sports Inference"
+date: "2025-10-20"
+summary: "Platt vs isotonic under drift; latency and stability trade-offs."
+tags: ["calibration","lightgbm","sports-ml"]
+reading_time: 12
+pdf: "/papers/calibrated-lightgbm.pdf"
+repo: "https://github.com/yourname/sports-ml-calibration"
+---
+
+## TL;DR
+We compare Platt scaling and isotonic regression for probability calibration under class imbalance and covariate drift, with a strict latency budget.
+
+### Key idea
+For a model score \( s \), calibrated probability \( \hat{p} = \sigma(as + b) \) or a monotone piecewise function via isotonic.  
+We evaluate Expected Calibration Error (ECE), Brier score, and profit metrics.

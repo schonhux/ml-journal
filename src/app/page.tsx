@@ -1,103 +1,268 @@
-import Image from "next/image";
+"use client";
+
+import { useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import DimensionHero from "@/components/DimensionHero";
+import FixedBg from "@/components/FixedBg";
+import SocialLinks from "@/components/SocialLinks";
+
+type Tab = "intro" | "experience" | "projects" | "publications";
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [tab, setTab] = useState<Tab>("intro");
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+  return (
+    <>
+      {/* Shared fixed background */}
+      <FixedBg />
+
+      {/* Hero */}
+      <DimensionHero active={tab} onSelect={setTab} />
+
+      {/* Panels overlay */}
+      <section className="relative z-10 text-white -mt-6 md:-mt-10">
+        <div className="mx-auto max-w-4xl px-5 py-10 md:py-12">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={tab}
+              initial={{ opacity: 0, x: 40 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -24 }}
+              transition={{ duration: 0.22, ease: "easeOut" }}
+            >
+              <div className="rounded-xl border border-white/15 bg-black/45 backdrop-blur-sm p-6 md:p-8">
+
+                {/* INTRO TAB */}
+                {tab === "intro" && (
+  <div className="prose prose-invert prose-zinc max-w-none text-center">
+    {/* Profile Image */}
+    <div className="flex justify-center mb-6 mt-2">
+      <img
+        src="/images/IMG_3919.PNG"
+        alt="Schon Huxley"
+        className="w-28 h-28 rounded-full border border-white/30 shadow-lg object-cover"
+      />
     </div>
+
+    {/* Intro Heading */}
+    <h1 className="text-2xl md:text-3xl font-semibold mb-4">
+      ~ Welcome To My Research Journal Portfolio ~
+    </h1>
+
+    {/* Paragraphs */}
+    <p className="leading-relaxed text-white/90">
+      I’m Schon Huxley, a junior software engineering student at Iowa State University
+      with a strong focus on applied machine learning, full-stack development, and systems
+      reliability. I’m passionate about building projects that merge technical depth with
+      real-world impact — from designing full-stack web applications to experimenting with
+      machine learning pipelines and applied AI systems.
+    </p>
+
+    <p className="mt-4 leading-relaxed text-white/90">
+      This site serves as both my personal portfolio and research journal — a space to
+      showcase the projects I build, the problems I solve, and the ideas that drive me forward.
+      As I continue exploring ML and AI applications, I’ll be releasing detailed writeups that
+      highlight my experiments, insights, and findings. My goal is to share not only what I build,
+      but also the thought process and curiosity that fuel my growth as an engineer.
+    </p>
+
+    <p className="mt-4 leading-relaxed text-white/90">
+      Outside of engineering, I stay grounded through lifting, wrestling, basketball, and time
+      spent with friends — balance that keeps me sharp and focused. I bring a different perspective
+      to the field, one built on discipline, curiosity, and leadership. I’m on a path to excellence —
+      the never-ending journey of self-improvement through code, creativity, and consistency.
+    </p>
+  </div>
+)}
+
+
+                {/* EXPERIENCE TAB */}
+                {tab === "experience" && (
+                  <div>
+                    <h2 className="text-2xl font-semibold">Experience</h2>
+
+                    <ul className="mt-6 space-y-5">
+                      {/* Berkley SRE Intern */}
+                      <li className="rounded-lg border border-white/10 bg-white/5 p-6">
+                        <div className="font-medium">
+                          Berkley Technology Services — Site Reliability Engineer (SRE) Intern
+                        </div>
+                        <div className="text-sm text-white/70">May 2025 – Present</div>
+                        <ul className="mt-3 list-disc pl-5 text-sm text-white/85 space-y-1">
+                          <li>
+                            Designed and automated secure credential workflows by integrating PowerShell, SQL, and REST APIs with AD, Delinea, and SolarWinds—reducing repetitive toil.
+                          </li>
+                          <li>
+                            Built Ansible playbooks to standardize system configurations across teams, preventing drift and enabling consistent deployments.
+                          </li>
+                          <li>
+                            Partnered with InfoSec, PIM, and application teams to tune noisy AppDynamics alerts, improving signal quality and trust in monitoring.
+                          </li>
+                          <li>
+                            Facilitated weekly stakeholder syncs to align engineers, managers, and partners—accelerating delivery and knowledge sharing.
+                          </li>
+                          <li>
+                            Grew hands-on in observability, CI/CD, and infra automation; balanced compliance with usability to drive adoption.
+                          </li>
+                        </ul>
+                      </li>
+
+                      {/* Freelance Web Developer */}
+                      <li className="rounded-lg border border-white/10 bg-white/5 p-6">
+                        <div className="font-medium">Freelance Web Developer — Self-Employed</div>
+                        <div className="text-sm text-white/70">2024 – Present</div>
+                        <ul className="mt-3 list-disc pl-5 text-sm text-white/85 space-y-1">
+                          <li>
+                            Design, build, and deploy small-business sites (landscaping, home inspection, and more) using Next.js/TypeScript, Tailwind, and Supabase; hosted on Vercel.
+                          </li>
+                          <li>
+                            Ship end-to-end: content structure, responsive UI, basic SEO/analytics, contact/booking flows; improved lead conversion and site performance for clients.
+                          </li>
+                        </ul>
+                      </li>
+                    </ul>
+                  </div>
+                )}
+
+                {/* PROJECTS TAB */}
+                {tab === "projects" && (
+                  <div>
+                    <h2 className="text-2xl font-semibold">Projects</h2>
+
+                    <div className="mt-6 grid gap-5 md:grid-cols-2">
+                      {/* Real-Time Sports ML Engine */}
+                      <div className="rounded-lg border border-white/10 bg-white/5 p-4 flex flex-col justify-between">
+                        <div>
+                          <div className="font-medium">Real-Time Sports Betting Prediction Engine</div>
+                          <div className="text-sm text-white/70">Python, LightGBM, Redis, DuckDB</div>
+                          <ul className="mt-2 list-disc pl-5 text-sm text-white/85 space-y-1">
+                            <li>&lt;250 ms inference, calibrated probabilities.</li>
+                            <li>EV/profit curves with real-time guardrails.</li>
+                          </ul>
+                        </div>
+                        <a
+                          href="https://your-demo-link.com"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mt-4 inline-block rounded-md border border-white/50 px-3 py-1 text-sm font-medium hover:bg-white hover:text-black"
+                        >
+                          Demo
+                        </a>
+                      </div>
+
+                      {/* N&M Landscaping */}
+                      <div className="rounded-lg border border-white/10 bg-white/5 p-4 flex flex-col justify-between">
+                        <div>
+                          <div className="font-medium">N&amp;M Landscaping Website</div>
+                          <div className="text-sm text-white/70">React/TypeScript, Supabase, Tailwind</div>
+                          <ul className="mt-2 list-disc pl-5 text-sm text-white/85 space-y-1">
+                            <li>Booking + admin dashboard with Supabase.</li>
+                            <li>Increased clientele by 40%.</li>
+                          </ul>
+                        </div>
+
+                        <div className="mt-4 flex gap-3">
+                          <a
+                            href="https://github.com/schonhux/NM-Landscaping-LLC-Website"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-block rounded-md border border-white/50 px-3 py-1 text-sm font-medium hover:bg-white hover:text-black"
+                          >
+                            Repo
+                          </a>
+                          <a
+                            href="https://nmlandscapingllc.com"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-block rounded-md border border-white/50 px-3 py-1 text-sm font-medium hover:bg-white hover:text-black"
+                          >
+                            Website
+                          </a>
+                        </div>
+                      </div>
+
+                      {/* MathMedic */}
+                      <div className="rounded-lg border border-white/10 bg-white/5 p-4 flex flex-col justify-between">
+                        <div>
+                          <div className="font-medium">MathMedic — Graphing Calculator</div>
+                          <div className="text-sm text-white/70">Flask, Matplotlib, Math Parsing</div>
+                          <ul className="mt-2 list-disc pl-5 text-sm text-white/85 space-y-1">
+                            <li>Dynamic math parsing + interactive graphing.</li>
+                            <li>Temporary data sessions, future DB planned.</li>
+                          </ul>
+                        </div>
+                        <a
+                          href="https://github.com/schonhux/MathMedic"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mt-4 inline-block rounded-md border border-white/50 px-3 py-1 text-sm font-medium hover:bg-white hover:text-black"
+                        >
+                          Repo
+                        </a>
+                      </div>
+
+                      {/* Tetris */}
+                      <div className="rounded-lg border border-white/10 bg-white/5 p-4 flex flex-col justify-between">
+                        <div>
+                          <div className="font-medium">Tetris — Advanced OOP Implementation</div>
+                          <div className="text-sm text-white/70">Java, OOP Design</div>
+                          <ul className="mt-2 list-disc pl-5 text-sm text-white/85 space-y-1">
+                            <li>Encapsulation, inheritance, and polymorphism for piece design.</li>
+                            <li>Fixed rotation overlap/edge cases via testing.</li>
+                          </ul>
+                        </div>
+                        <a
+                          href="https://github.com/schonhux/Tetris-"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mt-4 inline-block rounded-md border border-white/50 px-3 py-1 text-sm font-medium hover:bg-white hover:text-black"
+                        >
+                          Repo
+                        </a>
+                      </div>
+
+                      {/* Latent Space Portfolio */}
+                      <div className="rounded-lg border border-white/10 bg-white/5 p-4 flex flex-col justify-between">
+                        <div>
+                          <div className="font-medium">The Latent Space — Personal Portfolio</div>
+                          <div className="text-sm text-white/70">Next.js, TypeScript, Tailwind, Vercel</div>
+                          <ul className="mt-2 list-disc pl-5 text-sm text-white/85 space-y-1">
+                            <li>This website — “latent” symbolizing hidden representations in ML.</li>
+                            <li>Built with Next.js + Tailwind, deployed on Vercel.</li>
+                          </ul>
+                        </div>
+                        <a
+                          href="https://github.com/schonhux/ml-journal"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mt-4 inline-block rounded-md border border-white/50 px-3 py-1 text-sm font-medium hover:bg-white hover:text-black"
+                        >
+                          Repo
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* PUBLICATIONS TAB */}
+                {tab === "publications" && (
+                  <div className="prose prose-invert prose-zinc max-w-none">
+                    <h2>Publications</h2>
+                    <p>
+                      Coming soon: MDX write-ups with math and code. First up — calibrated probabilities
+                      in LightGBM for real-time sports inference, and a deep dive on the distinctions
+                      between Artificial Intelligence and Machine Learning.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      </section>
+
+      {/* Social Links */}
+      <SocialLinks />
+    </>
   );
 }
