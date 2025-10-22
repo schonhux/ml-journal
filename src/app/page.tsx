@@ -70,7 +70,7 @@ export default function Home() {
       Outside of engineering, I stay grounded through lifting, wrestling, basketball, and time
       spent with friends — balance that keeps me sharp and focused. I bring a different perspective
       to the field, one built on discipline, curiosity, and leadership. I’m on a path to excellence —
-      the never-ending journey of self-improvement through code, creativity, and consistency.
+      the never-ending journey of self-improvement.
     </p>
   </div>
 )}
