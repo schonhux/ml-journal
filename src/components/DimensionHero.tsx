@@ -1,6 +1,8 @@
 // src/components/DimensionHero.tsx
 "use client";
 
+import { Bot } from "lucide-react"; // 👈 Add this import
+
 type Tab = "intro" | "experience" | "projects" | "publications";
 
 export default function DimensionHero({
@@ -28,11 +30,18 @@ export default function DimensionHero({
     // no background here; transparent hero
     <section className="relative min-h-[68vh] md:min-h-[64vh] isolate">
       <div className="relative z-10 mx-auto max-w-5xl px-6 md:px-8 pt-20 pb-10 text-center text-white">
+        
+        {/* --- Robot Icon Section --- */}
         <div className="mx-auto mb-8 mt-6 flex h-24 w-24 items-center justify-center rounded-full border border-white/70">
-          <span className="text-3xl">◇</span>
+          <Bot
+            size={48}
+            className="text-white/90 hover:text-white transition-transform duration-300 hover:scale-110 animate-pulse"
+          />
         </div>
 
-        <h1 className="text-5xl md:text-6xl font-semibold tracking-wide">Schon Huxley</h1>
+        <h1 className="text-5xl md:text-6xl font-semibold tracking-wide">
+          Schon Huxley
+        </h1>
 
         <div className="mt-4">
           <p className="text-base md:text-lg text-white/90">
@@ -47,9 +56,7 @@ export default function DimensionHero({
           <Btn t="publications" label="Publications" />
         </div>
 
-        <div className="mt-8 text-xs text-white/70">
-         
-        </div>
+        <div className="mt-8 text-xs text-white/70"></div>
       </div>
     </section>
   );
