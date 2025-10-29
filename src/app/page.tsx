@@ -130,25 +130,38 @@ export default function Home() {
                     <h2 className="text-2xl font-semibold">Projects</h2>
 
                     <div className="mt-6 grid gap-5 md:grid-cols-2">
-                      {/* Real-Time Sports ML Engine */}
-                      <div className="rounded-lg border border-white/10 bg-white/5 p-4 flex flex-col justify-between">
-                        <div>
-                          <div className="font-medium">Real-Time Sports Betting Prediction Engine</div>
-                          <div className="text-sm text-white/70">Python, LightGBM, Redis, DuckDB</div>
-                          <ul className="mt-2 list-disc pl-5 text-sm text-white/85 space-y-1">
-                            <li>&lt;250 ms inference, calibrated probabilities.</li>
-                            <li>EV/profit curves with real-time guardrails.</li>
-                          </ul>
-                        </div>
-                        <a
-                          href="https://your-demo-link.com"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="mt-4 inline-block rounded-md border border-white/50 px-3 py-1 text-sm font-medium hover:bg-white hover:text-black"
-                        >
-                          Demo
-                        </a>
-                      </div>
+{/* Real-Time Sports ML Engine */}
+<div className="rounded-lg border border-white/10 bg-white/5 p-4 flex flex-col justify-between">
+  <div>
+    <div className="font-medium">Real-Time Sports Betting Prediction Engine</div>
+    <div className="text-sm text-white/70">Python, LightGBM, Redis, DuckDB</div>
+    <ul className="mt-2 list-disc pl-5 text-sm text-white/85 space-y-1">
+      <li>&lt;250 ms inference, calibrated probabilities.</li>
+      <li>EV/profit curves with real-time guardrails.</li>
+    </ul>
+  </div>
+
+  {/* Buttons */}
+  <div className="mt-4 flex gap-3">
+    <a
+      href="https://mljournal.vercel.app/inplay-edge"  // or your actual demo link
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-block rounded-md border border-white/50 px-3 py-1 text-sm font-medium hover:bg-white hover:text-black"
+    >
+      Demo
+    </a>
+    <a
+      href="https://github.com/schonhux/In-Play-Edge-Engine-" // 👈 your repo link
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-block rounded-md border border-white/50 px-3 py-1 text-sm font-medium hover:bg-white hover:text-black"
+    >
+      Repo
+    </a>
+  </div>
+</div>
+
 
                       {/* N&M Landscaping */}
                       <div className="rounded-lg border border-white/10 bg-white/5 p-4 flex flex-col justify-between">
