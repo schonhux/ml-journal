@@ -152,7 +152,7 @@ export default function Home() {
       Demo
     </a>
     <a
-      href="https://github.com/schonhux/In-Play-Edge-Engine-" // 👈 your repo link
+      href="https://github.com/schonhux/In-Play-Edge-Engine-" 
       target="_blank"
       rel="noopener noreferrer"
       className="inline-block rounded-md border border-white/50 px-3 py-1 text-sm font-medium hover:bg-white hover:text-black"
