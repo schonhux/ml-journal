@@ -144,7 +144,7 @@ export default function Home() {
   {/* Buttons */}
   <div className="mt-4 flex gap-3">
     <a
-      href="https://mljournal.vercel.app/inplay-edge"  // or your actual demo link
+      href="https://youtu.be/g5NZ6OFR-IE"
       target="_blank"
       rel="noopener noreferrer"
       className="inline-block rounded-md border border-white/50 px-3 py-1 text-sm font-medium hover:bg-white hover:text-black"
