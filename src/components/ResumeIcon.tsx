@@ -12,7 +12,7 @@ export default function ResumeIcon() {
 
       {/* Resume button */}
       <a
-        href="/resume.pdf"
+        href="/images/SchonHux%20-%20Resume.pdf"
         target="_blank"
         rel="noopener noreferrer"
         className="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white hover:bg-white hover:text-black transition"

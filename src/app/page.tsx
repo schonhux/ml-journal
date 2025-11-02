@@ -162,6 +162,39 @@ export default function Home() {
   </div>
 </div>
 
+                      {/* InsiderEdge */}
+<div className="rounded-lg border border-white/10 bg-white/5 p-4 flex flex-col justify-between">
+  <div>
+    <div className="font-medium">InsiderEdge — Insider Trading ML Platform</div>
+    <div className="text-sm text-white/70">C#, ML.NET, ASP.NET Core, Azure</div>
+    <ul className="mt-2 list-disc pl-5 text-sm text-white/85 space-y-1">
+      <li>Detected anomalous insider trades via LightGBM + SSA.</li>
+      <li>Ingested SEC filings, stock prices, and sentiment data.</li>
+      <li>Automated retraining and Azure-hosted deployment.</li>
+    </ul>
+  </div>
+
+  {/* Buttons */}
+  <div className="mt-4 flex gap-3">
+    <a
+      href="https://youtu.be/YOUR_IMOVIE_LINK" 
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-block rounded-md border border-white/50 px-3 py-1 text-sm font-medium hover:bg-white hover:text-black"
+    >
+      Demo
+    </a>
+    <a
+      href="https://github.com/schonhux/InsiderEdge" 
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-block rounded-md border border-white/50 px-3 py-1 text-sm font-medium hover:bg-white hover:text-black"
+    >
+      Repo
+    </a>
+  </div>
+</div>
+
 
                       {/* N&M Landscaping */}
                       <div className="rounded-lg border border-white/10 bg-white/5 p-4 flex flex-col justify-between">
