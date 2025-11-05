@@ -27,7 +27,6 @@ export default function DimensionHero({
   );
 
   return (
-    // no background here; transparent hero
     <section className="relative min-h-[68vh] md:min-h-[64vh] isolate">
       <div className="relative z-10 mx-auto max-w-5xl px-6 md:px-8 pt-20 pb-10 text-center text-white">
         
