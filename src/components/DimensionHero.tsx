@@ -2,23 +2,22 @@
 
 import { Bot } from "lucide-react";
 
-type SectionId = "intro" | "experience" | "projects" | "publications";
+type SectionId = "intro" | "experience" | "projects" | "Skills" | "publications";
 
 type DimensionHeroProps = {
   active: SectionId;
   onSelect: (id: SectionId) => void;
 };
 
-export default function DimensionHero({
-  active,
-  onSelect,
-}: DimensionHeroProps) {
+export default function DimensionHero({ active, onSelect }: DimensionHeroProps) {
   const Btn = ({ id, label }: { id: SectionId; label: string }) => (
     <button
       onClick={() => onSelect(id)}
       className={[
         "rounded border px-6 py-2 text-sm transition",
-        "text-white border-white/70 hover:bg-white hover:text-black",
+        active === id
+          ? "bg-white text-black border-white"
+          : "text-white border-white/70 hover:bg-white hover:text-black",
       ].join(" ")}
     >
       {label}
@@ -36,9 +35,7 @@ export default function DimensionHero({
           />
         </div>
 
-        <h1 className="text-5xl md:text-6xl font-semibold tracking-wide">
-          Schon Huxley
-        </h1>
+        <h1 className="text-5xl md:text-6xl font-semibold tracking-wide">Schon Huxley</h1>
 
         <div className="mt-4">
           <p className="text-base md:text-lg text-white/90">
@@ -50,9 +47,11 @@ export default function DimensionHero({
           <Btn id="intro" label="Intro" />
           <Btn id="experience" label="Experience" />
           <Btn id="projects" label="Projects" />
+          <Btn id="Skills" label="Tech Stack" />
           <Btn id="publications" label="Publications" />
         </div>
       </div>
     </section>
   );
 }
+
