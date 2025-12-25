@@ -46,29 +46,18 @@ export default function Home() {
 
     {/* Intro Heading */}
     <h1 className="text-2xl md:text-3xl font-semibold mb-4">
-      ~ Welcome To My Research Journal Portfolio ~
+      Schon here,
     </h1>
 
     {/* Paragraphs */}
     <p className="leading-relaxed text-white/90">
-      I’m Schon Huxley, a junior software engineering student at Iowa State University
-      with a strong focus on applied machine learning, full-stack development, and systems
-      reliability. I’m passionate about building projects that merge technical depth with
+      I’m an early-career Software Engineer and student at Iowa State University
+      with a strong focus on Infrastructure, Systems Reliability, and applied Machine Learning. 
+      I’m passionate about building projects that bridge technical depth with
       real-world impact — from designing full-stack web applications to experimenting with
       machine learning pipelines and applied AI systems.
-    </p>
-
-    <p className="mt-4 leading-relaxed text-white/90">
-      This site serves as both my personal portfolio and research journal — a space to
-      showcase the projects I build, the problems I solve, and the ideas that drive me forward.
-      As I continue exploring ML and AI applications, I’ll be releasing detailed writeups that
-      highlight my experiments, insights, and findings. My goal is to share not only what I build,
-      but also the thought process and curiosity that fuel my growth as an engineer.
-    </p>
-
-    <p className="mt-4 leading-relaxed text-white/90">
-      Outside of engineering, I stay grounded through lifting, wrestling, basketball, and time
-      spent with friends — balance that keeps me sharp and focused. I bring a different perspective
+      Outside of engineering, you can find me in the gym lifting or hooping on the courts.  I always enjoy hanging with my friends and keeping myself busy.
+      I bring a different perspective
       to the field, one built on discipline, curiosity, and leadership. I’m on a path to excellence —
       the never-ending journey of self-improvement.
     </p>
@@ -85,7 +74,7 @@ export default function Home() {
                       {/* Berkley SRE Intern */}
                       <li className="rounded-lg border border-white/10 bg-white/5 p-6">
                         <div className="font-medium">
-                          Berkley Technology Services — Site Reliability Engineer (SRE) Intern
+                          Berkley Technology Services — Site Reliability Engineer (Intern)
                         </div>
                         <div className="text-sm text-white/70">May 2025 – Present</div>
                         <ul className="mt-3 list-disc pl-5 text-sm text-white/85 space-y-1">
