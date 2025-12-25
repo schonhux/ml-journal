@@ -28,14 +28,5 @@ This project doubles as my **research journal**, where I’ll be posting technic
 - Lightweight frameworks and data-driven engineering  
 - Real-time inference pipelines and automation  
 
-Each article includes reproducible examples, references, and insight into how I approach problem-solving and experimentation.
 
----
-
-## 🧠 Author
-**Schon Huxley**  
-Software Engineer — Iowa State University  
-Focus: ML, Infrastructure, Full-Stack Systems   
-- 💼 [LinkedIn](https://linkedin.com/in/schonhuxley)  
-- 🐙 [GitHub](https://github.com/schonhux)  
 
