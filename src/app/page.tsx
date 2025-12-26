@@ -103,7 +103,8 @@ function CrowdJumbotron({ hovered }: { hovered: boolean }) {
 
       {/* screen */}
       <motion.div
-        className="relative mt-2 rounded-md border border-white/10 bg-black/40 p-2.5"
+        // ✅ CHANGE #1: center the CLE/GSW "screen" module
+        className="relative mt-2 mx-auto w-full max-w-[340px] rounded-md border border-white/10 bg-black/40 p-2.5"
         initial={false}
         animate={{
           opacity: hovered ? 1 : 0.92,
@@ -295,7 +296,9 @@ function InsiderEdgeSnapLine({ hovered }: { hovered: boolean }) {
     .map((p, i) => (i === 0 ? `M ${p.x} ${p.y}` : `L ${p.x} ${p.y}`))
     .join(" ");
 
-  const areaPath = `${fullLinePath} L ${w - padX} ${h - padY} L ${padX} ${h - padY} Z`;
+  const areaPath = `${fullLinePath} L ${w - padX} ${h - padY} L ${padX} ${
+    h - padY
+  } Z`;
   const crossX = hovered ? crashLow.x : snapPt.x;
 
   return (
@@ -761,14 +764,10 @@ function AdditionOnlyCalc({ hovered }: { hovered: boolean }) {
       <div className="relative flex items-start justify-between gap-3">
         <div>
           <div className="text-xs text-white/70">MathMedic</div>
-          <div className="mt-0.5 text-[11px] text-white/60">
-            
-          </div>
+          <div className="mt-0.5 text-[11px] text-white/60"></div>
         </div>
 
-        <div className="shrink-0 rounded-full border border-white/15 bg-black/40 px-2.5 py-1 text-[10px] text-white/75">
-         
-        </div>
+        <div className="shrink-0 rounded-full border border-white/15 bg-black/40 px-2.5 py-1 text-[10px] text-white/75"></div>
       </div>
 
       <div className="relative mt-3 rounded-md border border-white/10 bg-black/30 p-3">
@@ -969,11 +968,6 @@ function TetrisMini({ hovered }: { hovered: boolean }) {
   );
 }
 
-
-
-
-
-
 export default function Home() {
   const [tab, setTab] = useState<Tab>("intro");
   const [sportsHovered, setSportsHovered] = useState(false);
@@ -981,8 +975,6 @@ export default function Home() {
   const [landHovered, setLandHovered] = useState(false);
   const [mathHovered, setMathHovered] = useState(false);
   const [tetrisHovered, setTetrisHovered] = useState(false);
-
-
 
   return (
     <>
@@ -1054,18 +1046,17 @@ export default function Home() {
                           </div>
                           <ul className="mt-3 list-disc pl-5 text-sm text-white/85 space-y-2">
                             <li>
-                              Partnered with InfoSec, PIM, and Database teams on
-                              Client Search pilots (ACS), collaborating to tune
+                              Collaborated with teams including InfoSec, Enterprise Architecture, and Database on
+                              Client Search pilots (ACS), to tune
                               noisy monitoring alerts—improving signal quality
                               and trust in observability.
                             </li>
                             <li>
                               Automated an AppDynamics reporting workflow for
-                              ACS by scripting scheduled exports and table
-                              refreshes (previously manual) using a shell script
+                              ACS SLO information by scripting scheduled exports and table
+                              refreshes using a shell script
                               + Windows Task Scheduler on a shared SolarWinds
-                              main poller, saving every Monday morning with
-                              failure notifications.
+                              main poller server, saving every Monday morning to a spreadsheet.  
                             </li>
                             <li>
                               Participated in PI Planning across BTS to review
@@ -1125,7 +1116,7 @@ export default function Home() {
                           <ul className="mt-3 list-disc pl-5 text-sm text-white/85 space-y-2">
                             <li>
                               Led a site revamp and performed heavy SEO cleanup
-                              (technical + on-page), improving site structure,
+                              , improving site structure,
                               metadata, and search readiness for a larger client.
                             </li>
                             <li>
@@ -1311,60 +1302,67 @@ export default function Home() {
 
                       {/* MathMedic */}
                       <ProjectCard>
-  <div
-    onMouseEnter={() => setMathHovered(true)}
-    onMouseLeave={() => setMathHovered(false)}
-  >
-    <div className="font-medium">MathMedic — Graphing Calculator</div>
-    <div className="text-sm text-white/70">Flask, Matplotlib, Math Parsing</div>
+                        <div
+                          onMouseEnter={() => setMathHovered(true)}
+                          onMouseLeave={() => setMathHovered(false)}
+                        >
+                          <div className="font-medium">
+                            MathMedic — Graphing Calculator
+                          </div>
+                          <div className="text-sm text-white/70">
+                            Flask, Matplotlib, Math Parsing
+                          </div>
 
-    <ul className="mt-2 list-disc pl-5 text-sm text-white/85 space-y-1">
-      <li>Dynamic math parsing + interactive graphing.</li>
-      <li>Temporary data sessions, future DB planned.</li>
-    </ul>
+                          <ul className="mt-2 list-disc pl-5 text-sm text-white/85 space-y-1">
+                            <li>Dynamic math parsing + interactive graphing.</li>
+                            <li>Temporary data sessions, future DB planned.</li>
+                          </ul>
 
-    <AdditionOnlyCalc hovered={mathHovered} />
-  </div>
+                          <AdditionOnlyCalc hovered={mathHovered} />
+                        </div>
 
-  <a
-    href="https://github.com/schonhux/MathMedic"
-    target="_blank"
-    rel="noopener noreferrer"
-    className="mt-4 inline-block rounded-md border border-white/50 px-3 py-1 text-sm font-medium hover:bg-white hover:text-black transition-colors"
-  >
-    Repo
-  </a>
-</ProjectCard>
-
+                        <a
+                          href="https://github.com/schonhux/MathMedic"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mt-4 inline-block rounded-md border border-white/50 px-3 py-1 text-sm font-medium hover:bg-white hover:text-black transition-colors"
+                        >
+                          Repo
+                        </a>
+                      </ProjectCard>
 
                       {/* Tetris */}
                       <ProjectCard>
-  <div
-    onMouseEnter={() => setTetrisHovered(true)}
-    onMouseLeave={() => setTetrisHovered(false)}
-  >
-    <div className="font-medium">Tetris — Advanced OOP Implementation</div>
-    <div className="text-sm text-white/70">Java, OOP Design</div>
+                        <div
+                          onMouseEnter={() => setTetrisHovered(true)}
+                          onMouseLeave={() => setTetrisHovered(false)}
+                        >
+                          <div className="font-medium">
+                            Tetris — Advanced OOP Implementation
+                          </div>
+                          <div className="text-sm text-white/70">
+                            Java, OOP Design
+                          </div>
 
-    {/* the square mini tetris visual */}
-    <TetrisMini hovered={tetrisHovered} />
+                          {/* ✅ CHANGE #2: bullet points ABOVE the game */}
+                          <ul className="mt-3 list-disc pl-5 text-sm text-white/85 space-y-1">
+                            <li>Encapsulation + polymorphism for piece design.</li>
+                            <li>Rotation edge cases validated with tests.</li>
+                          </ul>
 
-    <ul className="mt-3 list-disc pl-5 text-sm text-white/85 space-y-1">
-      <li>Encapsulation + polymorphism for piece design.</li>
-      <li>Rotation edge cases validated with tests.</li>
-    </ul>
-  </div>
+                          {/* the square mini tetris visual */}
+                          <TetrisMini hovered={tetrisHovered} />
+                        </div>
 
-  <a
-    href="https://github.com/schonhux/Tetris-"
-    target="_blank"
-    rel="noopener noreferrer"
-    className="mt-4 inline-block rounded-md border border-white/50 px-3 py-1 text-sm font-medium hover:bg-white hover:text-black transition-colors"
-  >
-    Repo
-  </a>
-</ProjectCard>
-
+                        <a
+                          href="https://github.com/schonhux/Tetris-"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mt-4 inline-block rounded-md border border-white/50 px-3 py-1 text-sm font-medium hover:bg-white hover:text-black transition-colors"
+                        >
+                          Repo
+                        </a>
+                      </ProjectCard>
 
                       {/* Latent Space Portfolio */}
                       <ProjectCard>
