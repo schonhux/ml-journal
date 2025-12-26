@@ -2,6 +2,8 @@
 
 import React, { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import Image from "next/image";
+
 import DimensionHero from "@/components/DimensionHero";
 import FixedBg from "@/components/FixedBg";
 import SocialLinks from "@/components/SocialLinks";
@@ -41,7 +43,12 @@ function ProjectCard({
   );
 }
 
-
+/**
+ * Compact sportsbook vibe:
+ * - small “screen” with odds + score
+ * - animated crowd silhouette at bottom
+ * - subtle flicker + glow on hover
+ */
 function CrowdJumbotron({ hovered }: { hovered: boolean }) {
   const game = useMemo(
     () => ({
@@ -72,11 +79,16 @@ function CrowdJumbotron({ hovered }: { hovered: boolean }) {
       <div className="relative flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="text-xs text-white/70">Live Sportsbook</div>
-          <img
+
+          {/* DraftKings logo */}
+          <Image
             src="/logos/draftkings.svg"
             alt="DraftKings"
+            width={90}
+            height={16}
             className="h-4 w-auto opacity-70"
             draggable={false}
+            unoptimized
           />
         </div>
 
@@ -175,11 +187,7 @@ function CrowdJumbotron({ hovered }: { hovered: boolean }) {
         animate={{ opacity: hovered ? 0.9 : 0.65, y: hovered ? 0 : 1 }}
         transition={{ duration: 0.2, ease: "easeOut" }}
       >
-        <svg
-          viewBox="0 0 600 90"
-          preserveAspectRatio="none"
-          className="h-full w-full"
-        >
+        <svg viewBox="0 0 600 90" preserveAspectRatio="none" className="h-full w-full">
           <defs>
             <linearGradient id="crowdFade" x1="0" x2="0" y1="0" y2="1">
               <stop offset="0" stopColor="rgba(255,255,255,0.10)" />
@@ -293,10 +301,7 @@ function InsiderEdgeSnapLine({ hovered }: { hovered: boolean }) {
     .map((p, i) => (i === 0 ? `M ${p.x} ${p.y}` : `L ${p.x} ${p.y}`))
     .join(" ");
 
-  const areaPath = `${fullLinePath} L ${w - padX} ${h - padY} L ${padX} ${
-    h - padY
-  } Z`;
-
+  const areaPath = `${fullLinePath} L ${w - padX} ${h - padY} L ${padX} ${h - padY} Z`;
   const crossX = hovered ? crashLow.x : snapPt.x;
 
   return (
@@ -449,19 +454,22 @@ function InsiderEdgeSnapLine({ hovered }: { hovered: boolean }) {
   );
 }
 
-function LawnMowerJumbotron({
-  hovered,
-  href,
-}: {
-  hovered: boolean;
-  href: string;
-}) {
+function LawnMowerJumbotron({ hovered, href }: { hovered: boolean; href: string }) {
   const W = 520;
   const H = 160;
 
   // mower moves left -> right, slower
   const mowerX = hovered ? 360 : 120;
   const mowWidth = hovered ? 330 : 40;
+
+  // mower geometry pairing so the mow strip stays centered under the deck
+  const mowerGroupBaseY = 92;
+  const deckCenterY = mowerGroupBaseY + 34;
+  const mowStripH = 46;
+  const mowStripY = Math.round(deckCenterY - mowStripH / 2);
+
+  // strip starts cleanly away from the house area
+  const stripX = 120;
 
   return (
     <a
@@ -498,13 +506,11 @@ function LawnMowerJumbotron({
         <div className="relative rounded-md border border-white/10 bg-black/25 overflow-hidden">
           <svg viewBox={`0 0 ${W} ${H}`} className="block h-[110px] w-full">
             <defs>
-              {/* grass */}
               <linearGradient id="nmLawnAll" x1="0" x2="0" y1="0" y2="1">
                 <stop offset="0" stopColor="rgba(16,185,129,0.44)" />
                 <stop offset="1" stopColor="rgba(16,185,129,0.18)" />
               </linearGradient>
 
-              {/* subtle diagonal grass texture */}
               <pattern
                 id="nmStripesAll"
                 width="14"
@@ -516,13 +522,11 @@ function LawnMowerJumbotron({
                 <rect width="3" height="14" x="0" fill="rgba(255,255,255,0.05)" />
               </pattern>
 
-              {/* mowed texture */}
               <pattern id="nmMowed" width="10" height="10" patternUnits="userSpaceOnUse">
                 <rect width="10" height="10" fill="rgba(255,255,255,0)" />
                 <rect width="10" height="2" y="0" fill="rgba(255,255,255,0.06)" />
               </pattern>
 
-              {/* soft shadow for house */}
               <filter id="nmSoftShadow" x="-30%" y="-30%" width="160%" height="160%">
                 <feDropShadow
                   dx="0"
@@ -533,15 +537,15 @@ function LawnMowerJumbotron({
               </filter>
             </defs>
 
-            {/* ✅ Draw grass FIRST */}
+            {/* grass */}
             <rect x="0" y="0" width={W} height={H} fill="url(#nmLawnAll)" />
             <rect x="0" y="0" width={W} height={H} fill="url(#nmStripesAll)" opacity="0.9" />
 
-            {/* ✅ Mowed strip grows on hover (no outline boxes) */}
+            {/* mowed strip */}
             <motion.rect
-              x="120"
-              y="84"
-              height="46"
+              x={stripX}
+              y={mowStripY}
+              height={mowStripH}
               rx="12"
               fill="rgba(0,0,0,0.12)"
               initial={false}
@@ -549,9 +553,9 @@ function LawnMowerJumbotron({
               transition={{ duration: 1.35, ease: "easeInOut" }}
             />
             <motion.rect
-              x="120"
-              y="84"
-              height="46"
+              x={stripX}
+              y={mowStripY}
+              height={mowStripH}
               rx="12"
               fill="url(#nmMowed)"
               initial={false}
@@ -559,71 +563,72 @@ function LawnMowerJumbotron({
               transition={{ duration: 1.35, ease: "easeInOut" }}
             />
 
-            {/* ✅ House + bushes LAST so it sits OVER the grass */}
-            <g filter="url(#nmSoftShadow)" transform="translate(26,26)">
-              {/* roof */}
+            {/* house */}
+            <g filter="url(#nmSoftShadow)" transform="translate(22,22)">
               <path
-                d="M6 38 L46 10 L86 38"
-                fill="none"
-                stroke="rgba(255,255,255,0.98)"
-                strokeWidth="5"
+                d="
+                  M 10 44
+                  L 46 16
+                  L 82 44
+                  L 82 86
+                  Q 82 94 74 94
+                  L 18 94
+                  Q 10 94 10 86
+                  Z
+                "
+                fill="rgba(255,255,255,0.08)"
+                stroke="rgba(255,255,255,0.92)"
+                strokeWidth="4.5"
                 strokeLinejoin="round"
               />
-              {/* chimney */}
+
               <path
-                d="M70 18 L70 6 L82 6 L82 24"
+                d="M66 22 L66 6 L78 6 L78 30"
                 fill="none"
                 stroke="rgba(255,255,255,0.70)"
                 strokeWidth="3.5"
                 strokeLinecap="round"
               />
-              {/* house body */}
-              <rect
-                x="24"
-                y="38"
-                width="44"
-                height="38"
-                rx="12"
-                fill="rgba(255,255,255,0.10)"
-                stroke="rgba(255,255,255,0.32)"
-                strokeWidth="2"
-              />
-              {/* windows */}
-              <rect
-                x="30"
-                y="46"
-                width="12"
-                height="12"
-                rx="4"
-                fill="rgba(16,185,129,0.18)"
-                stroke="rgba(255,255,255,0.22)"
-                strokeWidth="1.2"
-              />
-              <rect
-                x="50"
-                y="46"
-                width="12"
-                height="12"
-                rx="4"
-                fill="rgba(16,185,129,0.18)"
-                stroke="rgba(255,255,255,0.22)"
-                strokeWidth="1.2"
-              />
-              {/* door */}
-              <rect
-                x="43"
-                y="56"
-                width="12"
-                height="20"
-                rx="5"
+
+              <path
+                d="
+                  M 42 94
+                  L 42 70
+                  Q 42 64 48 64
+                  L 52 64
+                  Q 58 64 58 70
+                  L 58 94
+                "
                 fill="rgba(0,0,0,0.18)"
-                stroke="rgba(255,255,255,0.20)"
-                strokeWidth="1.2"
+                stroke="rgba(255,255,255,0.22)"
+                strokeWidth="2"
+                strokeLinejoin="round"
               />
-              <circle cx="52" cy="66" r="1.5" fill="rgba(255,255,255,0.65)" />
+              <circle cx="55" cy="80" r="1.7" fill="rgba(255,255,255,0.65)" />
+
+              <rect
+                x="20"
+                y="56"
+                width="16"
+                height="14"
+                rx="4"
+                fill="rgba(16,185,129,0.18)"
+                stroke="rgba(255,255,255,0.24)"
+                strokeWidth="1.6"
+              />
+              <rect
+                x="66"
+                y="56"
+                width="16"
+                height="14"
+                rx="4"
+                fill="rgba(16,185,129,0.18)"
+                stroke="rgba(255,255,255,0.24)"
+                strokeWidth="1.6"
+              />
 
               {/* bushes */}
-              <g transform="translate(86,56)">
+              <g transform="translate(96,74)">
                 <circle cx="8" cy="10" r="9" fill="rgba(16,185,129,0.34)" />
                 <circle cx="18" cy="8" r="10" fill="rgba(16,185,129,0.28)" />
                 <circle cx="30" cy="10" r="9" fill="rgba(16,185,129,0.32)" />
@@ -637,7 +642,7 @@ function LawnMowerJumbotron({
               </g>
             </g>
 
-            {/* ✅ Mower (unchanged movement/feel) */}
+            {/* mower */}
             <motion.g
               initial={false}
               animate={{ x: mowerX }}
@@ -718,7 +723,7 @@ function LawnMowerJumbotron({
           </svg>
 
           <div className="flex items-center justify-between px-3 py-2 text-[11px] text-white/60">
-            <span className="text-white/55">Service site • SEO-ready</span>
+            <span className="text-white/55">The best in Chicagoland!</span>
             <motion.span
               initial={false}
               animate={{ opacity: hovered ? 1 : 0, y: hovered ? 0 : 6 }}
@@ -734,24 +739,17 @@ function LawnMowerJumbotron({
   );
 }
 
-
-
-
-
-
-
-
 export default function Home() {
   const [tab, setTab] = useState<Tab>("intro");
   const [sportsHovered, setSportsHovered] = useState(false);
   const [insiderHovered, setInsiderHovered] = useState(false);
   const [landHovered, setLandHovered] = useState(false);
 
-
   return (
     <>
       <FixedBg />
-      <DimensionHero active={tab as any} onSelect={setTab as any} />
+      {/* ✅ removed "as any" to stop build failure */}
+      <DimensionHero active={tab} onSelect={setTab} />
 
       <section className="relative z-10 text-white -mt-6 md:-mt-10">
         <div className="mx-auto max-w-4xl px-5 py-10 md:py-12">
@@ -768,9 +766,12 @@ export default function Home() {
                 {tab === "intro" && (
                   <div className="prose prose-invert prose-zinc max-w-none text-center">
                     <div className="flex justify-center mb-6 mt-2">
-                      <img
+                      <Image
                         src="/images/IMG_3919.PNG"
                         alt="Schon Huxley"
+                        width={112}
+                        height={112}
+                        priority
                         className="w-28 h-28 rounded-full border border-white/30 shadow-lg object-cover"
                       />
                     </div>
@@ -1028,47 +1029,46 @@ export default function Home() {
 
                       {/* N&M Landscaping */}
                       <ProjectCard>
-  <div
-    onMouseEnter={() => setLandHovered(true)}
-    onMouseLeave={() => setLandHovered(false)}
-  >
-    <div className="font-medium">N&amp;M Landscaping Website</div>
-    <div className="text-sm text-white/70">
-      React/TypeScript, Supabase, Tailwind
-    </div>
+                        <div
+                          onMouseEnter={() => setLandHovered(true)}
+                          onMouseLeave={() => setLandHovered(false)}
+                        >
+                          <div className="font-medium">
+                            N&amp;M Landscaping Website
+                          </div>
+                          <div className="text-sm text-white/70">
+                            React/TypeScript, Supabase, Tailwind
+                          </div>
+                          <ul className="mt-2 list-disc pl-5 text-sm text-white/85 space-y-1">
+                            <li>Booking + admin dashboard with Supabase.</li>
+                            <li>Increased clientele by 40%.</li>
+                          </ul>
 
-    <ul className="mt-2 list-disc pl-5 text-sm text-white/85 space-y-1">
-      <li>Booking + admin dashboard with Supabase.</li>
-      <li>Increased clientele by 40%.</li>
-    </ul>
+                          <LawnMowerJumbotron
+                            hovered={landHovered}
+                            href="https://nmlandscapingllc.com/"
+                          />
+                        </div>
 
-    {/* ✅ THIS is what makes it appear */}
-    <LawnMowerJumbotron
-      hovered={landHovered}
-      href="https://nmlandscapingllc.com/"
-    />
-  </div>
-
-  <div className="mt-4 flex gap-3">
-    <a
-      href="https://github.com/schonhux/NM-Landscaping-LLC-Website"
-      target="_blank"
-      rel="noopener noreferrer"
-      className="inline-block rounded-md border border-white/50 px-3 py-1 text-sm font-medium hover:bg-white hover:text-black transition-colors"
-    >
-      Repo
-    </a>
-    <a
-      href="https://nmlandscapingllc.com"
-      target="_blank"
-      rel="noopener noreferrer"
-      className="inline-block rounded-md border border-white/50 px-3 py-1 text-sm font-medium hover:bg-white hover:text-black transition-colors"
-    >
-      Website
-    </a>
-  </div>
-</ProjectCard>
-
+                        <div className="mt-4 flex gap-3">
+                          <a
+                            href="https://github.com/schonhux/NM-Landscaping-LLC-Website"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-block rounded-md border border-white/50 px-3 py-1 text-sm font-medium hover:bg-white hover:text-black transition-colors"
+                          >
+                            Repo
+                          </a>
+                          <a
+                            href="https://nmlandscapingllc.com"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-block rounded-md border border-white/50 px-3 py-1 text-sm font-medium hover:bg-white hover:text-black transition-colors"
+                          >
+                            Website
+                          </a>
+                        </div>
+                      </ProjectCard>
 
                       {/* MathMedic */}
                       <ProjectCard>
