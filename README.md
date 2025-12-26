@@ -7,7 +7,7 @@ This site showcases my projects, technical writing, and research experiments —
 ---
 
 ## 🌐 Live Site
-👉 [[ml-journal.vercel.app](https://ml-journal.vercel.app)](https://schonhuxley.com/)
+👉(https://schonhuxley.com/)
 
 ---
 
