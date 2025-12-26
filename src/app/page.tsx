@@ -43,12 +43,6 @@ function ProjectCard({
   );
 }
 
-/**
- * Compact sportsbook vibe:
- * - small “screen” with odds + score
- * - animated crowd silhouette at bottom
- * - subtle flicker + glow on hover
- */
 function CrowdJumbotron({ hovered }: { hovered: boolean }) {
   const game = useMemo(
     () => ({
@@ -739,11 +733,256 @@ function LawnMowerJumbotron({ hovered, href }: { hovered: boolean; href: string 
   );
 }
 
+function AdditionOnlyCalc({ hovered }: { hovered: boolean }) {
+  const [expr, setExpr] = useState("2+2");
+  const [result, setResult] = useState<string>("");
+
+  const evaluate = () => {
+    const s = expr.replace(/\s+/g, "");
+
+    if (!/^\d+(?:\+\d+)*$/.test(s)) {
+      setResult("Nah");
+      return;
+    }
+
+    const sum = s.split("+").reduce((acc, n) => acc + Number(n), 0);
+    setResult(String(sum));
+  };
+
+  return (
+    <div className="mt-3 rounded-md border border-white/15 bg-white/5 p-3 relative overflow-hidden">
+      <motion.div
+        className="pointer-events-none absolute -inset-10 bg-gradient-to-br from-white/10 via-transparent to-transparent blur-2xl"
+        initial={false}
+        animate={{ opacity: hovered ? 0.5 : 0.2, scale: hovered ? 1.03 : 1 }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
+      />
+
+      <div className="relative flex items-start justify-between gap-3">
+        <div>
+          <div className="text-xs text-white/70">MathMedic</div>
+          <div className="mt-0.5 text-[11px] text-white/60">
+            
+          </div>
+        </div>
+
+        <div className="shrink-0 rounded-full border border-white/15 bg-black/40 px-2.5 py-1 text-[10px] text-white/75">
+         
+        </div>
+      </div>
+
+      <div className="relative mt-3 rounded-md border border-white/10 bg-black/30 p-3">
+        <div className="flex items-center gap-2">
+          <input
+            value={expr}
+            onChange={(e) => setExpr(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") evaluate();
+            }}
+            placeholder="e.g. 10+25+3"
+            className="w-full rounded-md border border-white/10 bg-black/40 px-3 py-2 text-sm text-white/90 outline-none placeholder:text-white/35"
+          />
+          <button
+            type="button"
+            onClick={evaluate}
+            className="rounded-md border border-white/20 bg-white/5 px-3 py-2 text-sm text-white/80 hover:bg-white/10 transition"
+          >
+            =
+          </button>
+        </div>
+
+        <div className="mt-2 min-h-[18px] text-sm text-white/85 tabular-nums">
+          {result}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TetrisMini({ hovered }: { hovered: boolean }) {
+  const SIZE = 160;
+  const COLS = 10;
+  const ROWS = 10;
+  const cell = SIZE / COLS;
+
+  type Block = { x: number; y: number };
+  type Piece = {
+    color: string;
+    blocks: Block[];
+    start: { x: number; y: number }; // y can be negative
+    landY: number;
+  };
+
+  const pieces: Piece[] = useMemo(
+    () => [
+      // T
+      {
+        color: "rgba(56,189,248,0.95)",
+        blocks: [
+          { x: 1, y: 0 },
+          { x: 0, y: 1 },
+          { x: 1, y: 1 },
+          { x: 2, y: 1 },
+        ],
+        start: { x: 3, y: -2 },
+        landY: 8,
+      },
+      // L
+      {
+        color: "rgba(251,191,36,0.95)",
+        blocks: [
+          { x: 0, y: 0 },
+          { x: 0, y: 1 },
+          { x: 0, y: 2 },
+          { x: 1, y: 2 },
+        ],
+        start: { x: 1, y: -5 },
+        landY: 7,
+      },
+      // O
+      {
+        color: "rgba(34,197,94,0.95)",
+        blocks: [
+          { x: 0, y: 0 },
+          { x: 1, y: 0 },
+          { x: 0, y: 1 },
+          { x: 1, y: 1 },
+        ],
+        start: { x: 6, y: -4 },
+        landY: 8,
+      },
+      // I
+      {
+        color: "rgba(239,68,68,0.95)",
+        blocks: [
+          { x: 0, y: 0 },
+          { x: 0, y: 1 },
+          { x: 0, y: 2 },
+          { x: 0, y: 3 },
+        ],
+        start: { x: 8, y: -7 },
+        landY: 6,
+      },
+    ],
+    []
+  );
+
+  const maxBlockY = (blocks: Block[]) => blocks.reduce((m, b) => Math.max(m, b.y), 0);
+
+  const clampLandY = (landY: number, blocks: Block[]) => {
+    const maxY = maxBlockY(blocks);
+    return Math.min(ROWS - 1 - maxY, landY);
+  };
+
+  // integer rows for each piece (NO subpixel)
+  const [rows, setRows] = React.useState<number[]>(() => pieces.map((p) => p.start.y));
+
+  // reset when hover leaves (teleport back instantly)
+  React.useEffect(() => {
+    if (!hovered) setRows(pieces.map((p) => p.start.y));
+  }, [hovered, pieces]);
+
+  React.useEffect(() => {
+    if (!hovered) return;
+
+    // ✅ slower tick = more retro (increase this to slow down more)
+    const TICK_MS = 220;
+
+    const finalRows = pieces.map((p) => clampLandY(p.landY, p.blocks));
+
+    const id = window.setInterval(() => {
+      setRows((prev) =>
+        prev.map((r, i) => {
+          const target = finalRows[i];
+          if (r >= target) return r; // already landed
+          return r + 1; // ✅ move EXACTLY one grid cell per tick
+        })
+      );
+    }, TICK_MS);
+
+    return () => window.clearInterval(id);
+  }, [hovered, pieces]);
+
+  return (
+    <div className="mt-3 flex justify-center">
+      <div
+        className={[
+          "relative rounded-md border border-white/15 bg-black/35",
+          "w-[160px] h-[160px] overflow-hidden",
+          "shadow-[0_0_0_1px_rgba(255,255,255,0.06)_inset]",
+        ].join(" ")}
+      >
+        <svg width={SIZE} height={SIZE} viewBox={`0 0 ${SIZE} ${SIZE}`} className="block">
+          {/* grid */}
+          <g opacity="0.22">
+            {Array.from({ length: COLS + 1 }).map((_, i) => (
+              <line key={`v-${i}`} x1={i * cell} y1={0} x2={i * cell} y2={SIZE} stroke="white" strokeWidth="0.7" />
+            ))}
+            {Array.from({ length: ROWS + 1 }).map((_, i) => (
+              <line key={`h-${i}`} x1={0} y1={i * cell} x2={SIZE} y2={i * cell} stroke="white" strokeWidth="0.7" />
+            ))}
+          </g>
+
+          {/* slight sheen */}
+          <rect x="0" y="0" width={SIZE} height={SIZE} fill="rgba(255,255,255,0.03)" />
+
+          {pieces.map((p, idx) => {
+            const xPx = p.start.x * cell;
+            const yPx = rows[idx] * cell; // ✅ integer row -> exact grid alignment
+
+            return (
+              <g key={idx} transform={`translate(${xPx},${yPx})`}>
+                {p.blocks.map((b, i) => (
+                  <g key={i} transform={`translate(${b.x * cell},${b.y * cell})`}>
+                    <rect
+                      x="1"
+                      y="1"
+                      width={cell - 2}
+                      height={cell - 2}
+                      fill={p.color}
+                      shapeRendering="crispEdges"
+                    />
+                    <rect
+                      x="2"
+                      y="2"
+                      width={Math.max(2, cell * 0.35)}
+                      height={Math.max(2, cell * 0.2)}
+                      fill="rgba(255,255,255,0.20)"
+                      shapeRendering="crispEdges"
+                    />
+                    <rect
+                      x="1"
+                      y={cell - 3}
+                      width={cell - 2}
+                      height="2"
+                      fill="rgba(0,0,0,0.18)"
+                      shapeRendering="crispEdges"
+                    />
+                  </g>
+                ))}
+              </g>
+            );
+          })}
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+
+
+
+
+
 export default function Home() {
   const [tab, setTab] = useState<Tab>("intro");
   const [sportsHovered, setSportsHovered] = useState(false);
   const [insiderHovered, setInsiderHovered] = useState(false);
   const [landHovered, setLandHovered] = useState(false);
+  const [mathHovered, setMathHovered] = useState(false);
+  const [tetrisHovered, setTetrisHovered] = useState(false);
+
+
 
   return (
     <>
@@ -1072,56 +1311,60 @@ export default function Home() {
 
                       {/* MathMedic */}
                       <ProjectCard>
-                        <div>
-                          <div className="font-medium">
-                            MathMedic — Graphing Calculator
-                          </div>
-                          <div className="text-sm text-white/70">
-                            Flask, Matplotlib, Math Parsing
-                          </div>
-                          <ul className="mt-2 list-disc pl-5 text-sm text-white/85 space-y-1">
-                            <li>Dynamic math parsing + interactive graphing.</li>
-                            <li>Temporary data sessions, future DB planned.</li>
-                          </ul>
-                        </div>
-                        <a
-                          href="https://github.com/schonhux/MathMedic"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="mt-4 inline-block rounded-md border border-white/50 px-3 py-1 text-sm font-medium hover:bg-white hover:text-black transition-colors"
-                        >
-                          Repo
-                        </a>
-                      </ProjectCard>
+  <div
+    onMouseEnter={() => setMathHovered(true)}
+    onMouseLeave={() => setMathHovered(false)}
+  >
+    <div className="font-medium">MathMedic — Graphing Calculator</div>
+    <div className="text-sm text-white/70">Flask, Matplotlib, Math Parsing</div>
+
+    <ul className="mt-2 list-disc pl-5 text-sm text-white/85 space-y-1">
+      <li>Dynamic math parsing + interactive graphing.</li>
+      <li>Temporary data sessions, future DB planned.</li>
+    </ul>
+
+    <AdditionOnlyCalc hovered={mathHovered} />
+  </div>
+
+  <a
+    href="https://github.com/schonhux/MathMedic"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="mt-4 inline-block rounded-md border border-white/50 px-3 py-1 text-sm font-medium hover:bg-white hover:text-black transition-colors"
+  >
+    Repo
+  </a>
+</ProjectCard>
+
 
                       {/* Tetris */}
                       <ProjectCard>
-                        <div>
-                          <div className="font-medium">
-                            Tetris — Advanced OOP Implementation
-                          </div>
-                          <div className="text-sm text-white/70">
-                            Java, OOP Design
-                          </div>
-                          <ul className="mt-2 list-disc pl-5 text-sm text-white/85 space-y-1">
-                            <li>
-                              Encapsulation, inheritance, and polymorphism for
-                              piece design.
-                            </li>
-                            <li>
-                              Fixed rotation overlap/edge cases via testing.
-                            </li>
-                          </ul>
-                        </div>
-                        <a
-                          href="https://github.com/schonhux/Tetris-"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="mt-4 inline-block rounded-md border border-white/50 px-3 py-1 text-sm font-medium hover:bg-white hover:text-black transition-colors"
-                        >
-                          Repo
-                        </a>
-                      </ProjectCard>
+  <div
+    onMouseEnter={() => setTetrisHovered(true)}
+    onMouseLeave={() => setTetrisHovered(false)}
+  >
+    <div className="font-medium">Tetris — Advanced OOP Implementation</div>
+    <div className="text-sm text-white/70">Java, OOP Design</div>
+
+    {/* the square mini tetris visual */}
+    <TetrisMini hovered={tetrisHovered} />
+
+    <ul className="mt-3 list-disc pl-5 text-sm text-white/85 space-y-1">
+      <li>Encapsulation + polymorphism for piece design.</li>
+      <li>Rotation edge cases validated with tests.</li>
+    </ul>
+  </div>
+
+  <a
+    href="https://github.com/schonhux/Tetris-"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="mt-4 inline-block rounded-md border border-white/50 px-3 py-1 text-sm font-medium hover:bg-white hover:text-black transition-colors"
+  >
+    Repo
+  </a>
+</ProjectCard>
+
 
                       {/* Latent Space Portfolio */}
                       <ProjectCard>
