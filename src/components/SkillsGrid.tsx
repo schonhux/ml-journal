@@ -84,7 +84,6 @@ export default function SkillsGrid() {
     <div className="space-y-7">
       <div className="flex items-baseline justify-between gap-4">
         <h2 className="text-2xl font-semibold">Tech Stack</h2>
-        <div className="text-xs text-white/60">Hover • Click to open</div>
       </div>
 
       {groups.map((group) => {

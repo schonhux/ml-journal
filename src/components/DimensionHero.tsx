@@ -2,7 +2,8 @@
 
 import { Bot } from "lucide-react";
 
-type SectionId = "intro" | "experience" | "projects" | "tech stack" | "publications";
+type SectionId = "intro" | "experience" | "projects" | "tech" | "publications";
+
 
 type DimensionHeroProps = {
   active: SectionId;
@@ -47,7 +48,7 @@ export default function DimensionHero({ active, onSelect }: DimensionHeroProps) 
           <Btn id="intro" label="Intro" />
           <Btn id="experience" label="Experience" />
           <Btn id="projects" label="Projects" />
-          <Btn id="tech stack" label="Tech Stack" />
+          <Btn id="tech" label="Tech Stack" />
           <Btn id="publications" label="Publications" />
         </div>
       </div>
