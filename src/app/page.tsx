@@ -74,16 +74,7 @@ function CrowdJumbotron({ hovered }: { hovered: boolean }) {
         <div className="flex items-center gap-2">
           <div className="text-xs text-white/70">Live Sportsbook</div>
 
-          {/* DraftKings logo */}
-          <Image
-            src="/logos/draftkings.svg"
-            alt="DraftKings"
-            width={90}
-            height={16}
-            className="h-4 w-auto opacity-70"
-            draggable={false}
-            unoptimized
-          />
+          
         </div>
 
         <div className="flex items-center gap-2">
@@ -466,7 +457,7 @@ function LawnMowerJumbotron({ hovered, href }: { hovered: boolean; href: string 
   const mowStripY = Math.round(deckCenterY - mowStripH / 2);
 
   // strip starts cleanly away from the house area
-  const stripX = 120;
+  const stripX = 160;
 
   return (
     <a
@@ -488,9 +479,9 @@ function LawnMowerJumbotron({ hovered, href }: { hovered: boolean; href: string 
 
       <div className="relative flex items-center justify-between px-3 pt-3">
         <div>
-          <div className="text-xs text-white/80">N&amp;M Landscaping</div>
+          <div className="text-xs text-white/80">N&amp;M Landscaping LLC</div>
           <div className="mt-0.5 text-[11px] text-white/55">
-            hover to mow • click to open
+            
           </div>
         </div>
 
@@ -1021,9 +1012,7 @@ export default function Home() {
                       pipelines and applied AI systems. Outside of engineering,
                       you can find me in the gym lifting or hooping on the
                       courts. I always enjoy hanging with my friends and keeping
-                      myself busy. I bring a different perspective to the field,
-                      one built on discipline, curiosity, and leadership. I’m on
-                      a path to excellence — the never-ending journey of
+                      myself busy.  I’m on the path to excellence — the never-ending journey of
                       self-improvement.
                     </p>
                   </div>
@@ -1052,16 +1041,16 @@ export default function Home() {
                               and trust in observability.
                             </li>
                             <li>
-                              Automated an AppDynamics reporting workflow for
-                              ACS SLO information by scripting scheduled exports and table
+                              Automated an AppDynamics ACS Pilot reporting workflow for
+                              SLO information by scripting scheduled exports and table
                               refreshes using a shell script
                               + Windows Task Scheduler on a shared SolarWinds
-                              main poller server, saving every Monday morning to a spreadsheet.  
+                              main poller server, saving every Monday morning to the appropriate spreadsheet.  
                             </li>
                             <li>
                               Participated in PI Planning across BTS to review
                               team progress, dependencies, backlog, and risks;
-                              presented updates on behalf of the team—building a
+                              presented updates on behalf of the SRE team, building a
                               stronger understanding of cross-team delivery and
                               how the business operates on the technical side.
                             </li>
@@ -1076,7 +1065,7 @@ export default function Home() {
                             <li>
                               Designed and automated secure credential workflows
                               by integrating PowerShell, SQL, and REST APIs with
-                              AD, Delinea, and SolarWinds—reducing repetitive
+                              AD, Delinea, and SolarWinds—reducing operational
                               toil.
                             </li>
                             <li>
@@ -1103,7 +1092,7 @@ export default function Home() {
                           Freelance Web Developer — Self-Employed
                         </div>
                         <div className="text-sm text-white/70 font-medium mt-1">
-                          2024 – Present
+                          
                         </div>
 
                         <div className="mt-4">
@@ -1122,7 +1111,7 @@ export default function Home() {
                             <li>
                               Streamlined content organization and navigation to
                               improve discoverability and user flow while keeping
-                              performance and responsiveness tight.
+                              performance and responsiveness in check. 
                             </li>
                           </ul>
                         </div>
@@ -1136,8 +1125,8 @@ export default function Home() {
                           </div>
                           <ul className="mt-3 list-disc pl-5 text-sm text-white/85 space-y-2">
                             <li>
-                              Designed, built, and deployed the company website
-                              using Next.js/TypeScript, Tailwind, and Supabase;
+                              Designed, built, and deployed N&M's company website
+                              using React, TypeScript, Tailwind CSS, and Supabase;
                               hosted on Vercel.
                             </li>
                             <li>
