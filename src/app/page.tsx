@@ -11,7 +11,6 @@ import SkillsGrid from "@/components/SkillsGrid";
 
 type Tab = "intro" | "experience" | "projects" | "tech" | "publications";
 
-/** Small helper for consistent project card behavior */
 function ProjectCard({
   children,
   className = "",
@@ -45,23 +44,23 @@ function ProjectCard({
 
 function CrowdJumbotron({ hovered }: { hovered: boolean }) {
   const game = useMemo(
-    () => ({
-      away: "CLE",
-      home: "GSW",
-      awayScore: 89,
-      homeScore: 89,
-      clock: "01:42",
-      period: "Q4",
-      market: hovered ? "-140" : "-120",
-      model: hovered ? "+120" : "+100",
-      note: hovered ? "Turnover → line moves" : "Live pricing",
-    }),
-    [hovered]
-  );
+  () => ({
+    away: "CLE",
+    home: "GSW",
+    awayScore: hovered ? 92 : 89,
+    homeScore: hovered ? 89 : 89,
+    clock: hovered ? "00:59" : "01:42",
+    period: "Q4",
+    market: hovered ? "-165" : "-120",
+    model: hovered ? "-210" : "+100",
+    note: hovered ? "Kyrie hits 3 - Cavs ahead" : "Both teams scoreless since 4:39 ",
+  }),
+  [hovered]
+);
+
 
   return (
     <div className="mt-3 relative rounded-md border border-white/10 bg-black/25 p-3 overflow-hidden">
-      {/* ambient glow (absolute => no layout changes) */}
       <motion.div
         className="pointer-events-none absolute -inset-10 bg-gradient-to-br from-white/10 via-transparent to-transparent blur-2xl"
         initial={false}
@@ -69,7 +68,6 @@ function CrowdJumbotron({ hovered }: { hovered: boolean }) {
         transition={{ duration: 0.22, ease: "easeOut" }}
       />
 
-      {/* header */}
       <div className="relative flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="text-xs text-white/70">Live Sportsbook</div>
@@ -94,7 +92,6 @@ function CrowdJumbotron({ hovered }: { hovered: boolean }) {
 
       {/* screen */}
       <motion.div
-        // ✅ CHANGE #1: center the CLE/GSW "screen" module
         className="relative mt-2 mx-auto w-full max-w-[340px] rounded-md border border-white/10 bg-black/40 p-2.5"
         initial={false}
         animate={{
@@ -105,7 +102,6 @@ function CrowdJumbotron({ hovered }: { hovered: boolean }) {
         }}
         transition={{ duration: 0.18 }}
       >
-        {/* flicker overlay (absolute => no layout changes) */}
         <motion.div
           className="pointer-events-none absolute inset-0"
           initial={false}
@@ -236,13 +232,11 @@ function InsiderEdgeSnapLine({ hovered }: { hovered: boolean }) {
   const padX = 10;
   const padY = 12;
 
-  // Trend up → event → sharp drop → stabilize (stock-app vibe)
   const series = useMemo(
     () => [
       184.2, 184.9, 185.4, 186.1, 187.0, 188.2, 189.7, 191.4, 193.0, 194.6,
-      196.2, 197.9, 199.4, 200.6, 201.3, 202.2, 201.8,
-      // event + drop
-      195.2, 193.4, 194.1, 194.8, 195.0,
+      196.2, 197.9, 199.4, 200.6, 201.3, 202.2, 201.8, 195.2, 193.4, 194.1,
+      194.8, 195.0,
     ],
     []
   );
@@ -254,10 +248,10 @@ function InsiderEdgeSnapLine({ hovered }: { hovered: boolean }) {
     const x = padX + (i * (w - padX * 2)) / Math.max(1, series.length - 1);
     const t = (v - min) / Math.max(1e-6, max - min);
     const y = padY + (1 - t) * (h - padY * 2);
-    return { x, y, v };
+    return { x, y, v, i };
   });
 
-  const snapIndex = 16; // where event happens (right before drop)
+  const snapIndex = 16;
   const snapPt = pts[snapIndex];
 
   const postEventPts = pts.slice(snapIndex);
@@ -265,13 +259,6 @@ function InsiderEdgeSnapLine({ hovered }: { hovered: boolean }) {
     (best, p) => (p.v < best.v ? p : best),
     postEventPts[0]
   );
-
-  // Show event price by default; on hover show crash low (cursor moved into drop)
-  const priceNow = hovered ? crashLow.v : snapPt.v;
-
-  const start = pts[0].v;
-  const change = priceNow - start;
-  const changePct = (change / start) * 100;
 
   const prePath = pts
     .slice(0, snapIndex + 1)
@@ -290,7 +277,96 @@ function InsiderEdgeSnapLine({ hovered }: { hovered: boolean }) {
   const areaPath = `${fullLinePath} L ${w - padX} ${h - padY} L ${padX} ${
     h - padY
   } Z`;
-  const crossX = hovered ? crashLow.x : snapPt.x;
+
+  // -------- Smooth scrubbing state --------
+  const [inside, setInside] = React.useState(false);
+  const [scrubT, setScrubT] = React.useState<number | null>(null); // continuous param in [0, n-1]
+
+  // rAF throttle to keep it smooth and avoid rerender storm
+  const rafRef = React.useRef<number | null>(null);
+  const pendingTRef = React.useRef<number | null>(null);
+
+  const n = pts.length;
+
+  // Convert continuous t -> interpolated point on polyline
+  const interpPoint = React.useMemo(() => {
+    const clamp = (x: number, a: number, b: number) => Math.max(a, Math.min(b, x));
+    const t = scrubT;
+
+    // default view:
+    // - not hovered: show event
+    // - hovered: show crash low (your original behavior)
+    if (t == null) {
+      return hovered ? crashLow : snapPt;
+    }
+
+    const tt = clamp(t, 0, n - 1);
+    const i0 = Math.floor(tt);
+    const i1 = Math.min(n - 1, i0 + 1);
+    const alpha = tt - i0;
+
+    const p0 = pts[i0];
+    const p1 = pts[i1];
+
+    // linear interpolation across segment
+    const x = p0.x + (p1.x - p0.x) * alpha;
+    const y = p0.y + (p1.y - p0.y) * alpha;
+    const v = p0.v + (p1.v - p0.v) * alpha;
+
+    return { x, y, v, i: tt };
+  }, [scrubT, hovered, crashLow, snapPt, pts, n]);
+
+  const pNow = interpPoint;
+
+  const priceNow = pNow.v;
+  const start = pts[0].v;
+  const change = priceNow - start;
+  const changePct = (change / start) * 100;
+
+  const crossX = pNow.x;
+
+  const label = (() => {
+    // use continuous index to label
+    const t = typeof pNow.i === "number" ? pNow.i : snapIndex;
+    if (Math.abs(t - snapIndex) < 0.35) return "event";
+    if (t > snapIndex + 0.35) return "crash";
+    return "trend";
+  })();
+
+  const bottomText =
+    typeof pNow.i === "number" && pNow.i > snapIndex
+      ? "sell pressure → liquidity gap"
+      : "anomaly spike detected";
+
+  function onMove(e: React.MouseEvent<HTMLDivElement>) {
+    if (!hovered) return;
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    const xPx = e.clientX - rect.left;
+    const svgX = (xPx / rect.width) * w;
+
+    // Map x position to continuous t in [0, n-1]
+    const x0 = pts[0].x;
+    const x1 = pts[n - 1].x;
+    const ratio = (svgX - x0) / Math.max(1e-6, x1 - x0);
+    const t = ratio * (n - 1);
+
+    pendingTRef.current = t;
+
+    if (rafRef.current != null) return;
+    rafRef.current = window.requestAnimationFrame(() => {
+      rafRef.current = null;
+      if (pendingTRef.current != null) {
+        setScrubT(pendingTRef.current);
+      }
+    });
+  }
+
+  React.useEffect(() => {
+    return () => {
+      if (rafRef.current != null) window.cancelAnimationFrame(rafRef.current);
+    };
+  }, []);
 
   return (
     <div className="mt-3 rounded-md border border-white/15 bg-white/5 p-3 relative overflow-hidden">
@@ -332,26 +408,34 @@ function InsiderEdgeSnapLine({ hovered }: { hovered: boolean }) {
       </div>
 
       {/* chart */}
-      <div className="mt-3 relative">
+      <div
+        className="mt-3 relative"
+        onMouseEnter={() => setInside(true)}
+        onMouseLeave={() => {
+          setInside(false);
+          setScrubT(null);
+        }}
+        onMouseMove={onMove}
+      >
         {/* crosshair line */}
         <motion.div
           className="pointer-events-none absolute top-0 bottom-[18px] w-px bg-white/20"
           style={{ left: `${(crossX / w) * 100}%` }}
           initial={false}
           animate={{ opacity: hovered ? 1 : 0 }}
-          transition={{ duration: 0.16 }}
+          transition={{ duration: 0.12 }}
         />
 
-        {/* crosshair label */}
+        {/* tooltip */}
         <motion.div
           className="pointer-events-none absolute -top-2"
-          style={{ left: `calc(${(crossX / w) * 100}% - 22px)` }}
+          style={{ left: `calc(${(crossX / w) * 100}% - 28px)` }}
           initial={false}
           animate={{ opacity: hovered ? 1 : 0, y: hovered ? 0 : 4 }}
-          transition={{ duration: 0.16 }}
+          transition={{ duration: 0.12 }}
         >
           <div className="rounded-md border border-white/15 bg-black/60 px-2 py-1 text-[10px] text-white/80 tabular-nums">
-            {hovered ? "crash" : "event"}
+            {label} • ${priceNow.toFixed(2)}
           </div>
         </motion.div>
 
@@ -393,7 +477,7 @@ function InsiderEdgeSnapLine({ hovered }: { hovered: boolean }) {
             strokeLinecap="round"
             initial={false}
             animate={{ opacity: hovered ? 0.9 : 0.95 }}
-            transition={{ duration: 0.16 }}
+            transition={{ duration: 0.12 }}
           />
 
           {/* crash segment animates in on hover */}
@@ -413,15 +497,16 @@ function InsiderEdgeSnapLine({ hovered }: { hovered: boolean }) {
             )}
           </AnimatePresence>
 
-          {/* marker dot */}
+          {/* marker dot follows smoothly */}
           <motion.circle
-            cx={hovered ? crashLow.x : snapPt.x}
-            cy={hovered ? crashLow.y : snapPt.y}
-            r="3.5"
+            cx={pNow.x}
+            cy={pNow.y}
+            r="4.2"
             fill="white"
             initial={false}
-            animate={{ r: hovered ? 4.4 : 3.5, opacity: hovered ? 1 : 0.75 }}
-            transition={{ duration: 0.16 }}
+            // IMPORTANT: no spring here; direct follow looks smoother for scrubbing
+            animate={{ cx: pNow.x, cy: pNow.y, opacity: hovered ? 1 : 0.75 }}
+            transition={{ duration: 0.06, ease: "linear" }}
           />
         </svg>
 
@@ -431,16 +516,27 @@ function InsiderEdgeSnapLine({ hovered }: { hovered: boolean }) {
           <motion.span
             initial={false}
             animate={{ opacity: hovered ? 1 : 0, y: hovered ? 0 : 6 }}
-            transition={{ duration: 0.16 }}
+            transition={{ duration: 0.12 }}
             className="text-white/75"
           >
-            {hovered ? "sell pressure → liquidity gap" : "anomaly spike detected"}
+            {bottomText}
           </motion.span>
         </div>
+
+        {/* hint only when inside + hovered */}
+        <motion.div
+          className="pointer-events-none absolute right-2 top-2 text-[10px] text-white/45"
+          initial={false}
+          animate={{ opacity: hovered && inside ? 1 : 0 }}
+          transition={{ duration: 0.12 }}
+        >
+        </motion.div>
       </div>
     </div>
   );
 }
+
+
 
 function LawnMowerJumbotron({ hovered, href }: { hovered: boolean; href: string }) {
   const W = 520;
