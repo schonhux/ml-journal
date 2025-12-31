@@ -244,39 +244,44 @@ function InsiderEdgeSnapLine({ hovered }: { hovered: boolean }) {
   const min = Math.min(...series);
   const max = Math.max(...series);
 
-  const pts = series.map((v, i) => {
-    const x = padX + (i * (w - padX * 2)) / Math.max(1, series.length - 1);
-    const t = (v - min) / Math.max(1e-6, max - min);
-    const y = padY + (1 - t) * (h - padY * 2);
-    return { x, y, v, i };
-  });
+  const pts = useMemo(() => {
+    return series.map((v, i) => {
+      const x = padX + (i * (w - padX * 2)) / Math.max(1, series.length - 1);
+      const t = (v - min) / Math.max(1e-6, max - min);
+      const y = padY + (1 - t) * (h - padY * 2);
+      return { x, y, v, i };
+    });
+  }, [series, min, max, w, h, padX, padY]);
 
   const snapIndex = 16;
   const snapPt = pts[snapIndex];
 
   const postEventPts = pts.slice(snapIndex);
-  const crashLow = postEventPts.reduce(
-    (best, p) => (p.v < best.v ? p : best),
-    postEventPts[0]
-  );
+  const crashLow = useMemo(() => {
+    return postEventPts.reduce((best, p) => (p.v < best.v ? p : best), postEventPts[0]);
+  }, [postEventPts]);
 
-  const prePath = pts
-    .slice(0, snapIndex + 1)
-    .map((p, i) => (i === 0 ? `M ${p.x} ${p.y}` : `L ${p.x} ${p.y}`))
-    .join(" ");
+  const prePath = useMemo(() => {
+    return pts
+      .slice(0, snapIndex + 1)
+      .map((p, i) => (i === 0 ? `M ${p.x} ${p.y}` : `L ${p.x} ${p.y}`))
+      .join(" ");
+  }, [pts]);
 
-  const postPath = pts
-    .slice(snapIndex)
-    .map((p, i) => (i === 0 ? `M ${p.x} ${p.y}` : `L ${p.x} ${p.y}`))
-    .join(" ");
+  const postPath = useMemo(() => {
+    return pts
+      .slice(snapIndex)
+      .map((p, i) => (i === 0 ? `M ${p.x} ${p.y}` : `L ${p.x} ${p.y}`))
+      .join(" ");
+  }, [pts]);
 
-  const fullLinePath = pts
-    .map((p, i) => (i === 0 ? `M ${p.x} ${p.y}` : `L ${p.x} ${p.y}`))
-    .join(" ");
+  const fullLinePath = useMemo(() => {
+    return pts.map((p, i) => (i === 0 ? `M ${p.x} ${p.y}` : `L ${p.x} ${p.y}`)).join(" ");
+  }, [pts]);
 
-  const areaPath = `${fullLinePath} L ${w - padX} ${h - padY} L ${padX} ${
-    h - padY
-  } Z`;
+  const areaPath = useMemo(() => {
+    return `${fullLinePath} L ${w - padX} ${h - padY} L ${padX} ${h - padY} Z`;
+  }, [fullLinePath, w, h, padX, padY]);
 
   // -------- Smooth scrubbing state --------
   const [inside, setInside] = React.useState(false);
@@ -284,23 +289,23 @@ function InsiderEdgeSnapLine({ hovered }: { hovered: boolean }) {
 
   // rAF throttle to keep it smooth and avoid rerender storm
   const rafRef = React.useRef<number | null>(null);
-  const pendingTRef = React.useRef<number | null>(null);
+  const pendingClientXRef = React.useRef<number | null>(null);
+  const chartRectRef = React.useRef<DOMRect | null>(null);
 
   const n = pts.length;
 
-  // Convert continuous t -> interpolated point on polyline
+  // Default target when not scrubbing:
+  // - not hovered: event
+  // - hovered: crash low
+  const defaultTarget = hovered ? crashLow : snapPt;
+
+  // Convert continuous t -> interpolated point on polyline (clamped)
   const interpPoint = React.useMemo(() => {
     const clamp = (x: number, a: number, b: number) => Math.max(a, Math.min(b, x));
-    const t = scrubT;
 
-    // default view:
-    // - not hovered: show event
-    // - hovered: show crash low (your original behavior)
-    if (t == null) {
-      return hovered ? crashLow : snapPt;
-    }
+    if (scrubT == null) return defaultTarget;
 
-    const tt = clamp(t, 0, n - 1);
+    const tt = clamp(scrubT, 0, n - 1);
     const i0 = Math.floor(tt);
     const i1 = Math.min(n - 1, i0 + 1);
     const alpha = tt - i0;
@@ -308,13 +313,13 @@ function InsiderEdgeSnapLine({ hovered }: { hovered: boolean }) {
     const p0 = pts[i0];
     const p1 = pts[i1];
 
-    // linear interpolation across segment
-    const x = p0.x + (p1.x - p0.x) * alpha;
-    const y = p0.y + (p1.y - p0.y) * alpha;
-    const v = p0.v + (p1.v - p0.v) * alpha;
-
-    return { x, y, v, i: tt };
-  }, [scrubT, hovered, crashLow, snapPt, pts, n]);
+    return {
+      x: p0.x + (p1.x - p0.x) * alpha,
+      y: p0.y + (p1.y - p0.y) * alpha,
+      v: p0.v + (p1.v - p0.v) * alpha,
+      i: tt,
+    };
+  }, [scrubT, defaultTarget, pts, n]);
 
   const pNow = interpPoint;
 
@@ -326,7 +331,6 @@ function InsiderEdgeSnapLine({ hovered }: { hovered: boolean }) {
   const crossX = pNow.x;
 
   const label = (() => {
-    // use continuous index to label
     const t = typeof pNow.i === "number" ? pNow.i : snapIndex;
     if (Math.abs(t - snapIndex) < 0.35) return "event";
     if (t > snapIndex + 0.35) return "crash";
@@ -338,35 +342,60 @@ function InsiderEdgeSnapLine({ hovered }: { hovered: boolean }) {
       ? "sell pressure → liquidity gap"
       : "anomaly spike detected";
 
-  function onMove(e: React.MouseEvent<HTMLDivElement>) {
-    if (!hovered) return;
+  // Map clientX -> continuous t, clamped to chart x-range
+  const clientXToT = React.useCallback(
+    (clientX: number) => {
+      const rect = chartRectRef.current;
+      if (!rect) return null;
 
-    const rect = e.currentTarget.getBoundingClientRect();
-    const xPx = e.clientX - rect.left;
-    const svgX = (xPx / rect.width) * w;
+      const xPx = clientX - rect.left;
+      const xClamped = Math.max(0, Math.min(rect.width, xPx));
 
-    // Map x position to continuous t in [0, n-1]
-    const x0 = pts[0].x;
-    const x1 = pts[n - 1].x;
-    const ratio = (svgX - x0) / Math.max(1e-6, x1 - x0);
-    const t = ratio * (n - 1);
+      // map DOM pixels to SVG x
+      const svgX = (xClamped / rect.width) * w;
 
-    pendingTRef.current = t;
+      const x0 = pts[0].x;
+      const x1 = pts[n - 1].x;
 
-    if (rafRef.current != null) return;
-    rafRef.current = window.requestAnimationFrame(() => {
-      rafRef.current = null;
-      if (pendingTRef.current != null) {
-        setScrubT(pendingTRef.current);
-      }
-    });
-  }
+      const ratio = (svgX - x0) / Math.max(1e-6, x1 - x0);
+      const t = ratio * (n - 1);
+
+      // clamp to [0, n-1]
+      return Math.max(0, Math.min(n - 1, t));
+    },
+    [pts, n, w]
+  );
+
+  const scheduleScrub = React.useCallback(
+    (clientX: number) => {
+      pendingClientXRef.current = clientX;
+      if (rafRef.current != null) return;
+
+      rafRef.current = window.requestAnimationFrame(() => {
+        rafRef.current = null;
+        const cx = pendingClientXRef.current;
+        if (cx == null) return;
+
+        const t = clientXToT(cx);
+        if (t == null) return;
+
+        setScrubT(t);
+      });
+    },
+    [clientXToT]
+  );
 
   React.useEffect(() => {
     return () => {
       if (rafRef.current != null) window.cancelAnimationFrame(rafRef.current);
     };
   }, []);
+
+  const onMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!hovered) return;
+    // reuse cached rect so fast moves don’t constantly call getBoundingClientRect()
+    scheduleScrub(e.clientX);
+  };
 
   return (
     <div className="mt-3 rounded-md border border-white/15 bg-white/5 p-3 relative overflow-hidden">
@@ -410,10 +439,15 @@ function InsiderEdgeSnapLine({ hovered }: { hovered: boolean }) {
       {/* chart */}
       <div
         className="mt-3 relative"
-        onMouseEnter={() => setInside(true)}
+        onMouseEnter={(e) => {
+          setInside(true);
+          chartRectRef.current = e.currentTarget.getBoundingClientRect();
+        }}
         onMouseLeave={() => {
           setInside(false);
           setScrubT(null);
+          chartRectRef.current = null;
+          pendingClientXRef.current = null;
         }}
         onMouseMove={onMove}
       >
@@ -423,7 +457,7 @@ function InsiderEdgeSnapLine({ hovered }: { hovered: boolean }) {
           style={{ left: `${(crossX / w) * 100}%` }}
           initial={false}
           animate={{ opacity: hovered ? 1 : 0 }}
-          transition={{ duration: 0.12 }}
+          transition={{ duration: 0.08, ease: "linear" }}
         />
 
         {/* tooltip */}
@@ -432,7 +466,7 @@ function InsiderEdgeSnapLine({ hovered }: { hovered: boolean }) {
           style={{ left: `calc(${(crossX / w) * 100}% - 28px)` }}
           initial={false}
           animate={{ opacity: hovered ? 1 : 0, y: hovered ? 0 : 4 }}
-          transition={{ duration: 0.12 }}
+          transition={{ duration: 0.1, ease: "easeOut" }}
         >
           <div className="rounded-md border border-white/15 bg-black/60 px-2 py-1 text-[10px] text-white/80 tabular-nums">
             {label} • ${priceNow.toFixed(2)}
@@ -497,14 +531,13 @@ function InsiderEdgeSnapLine({ hovered }: { hovered: boolean }) {
             )}
           </AnimatePresence>
 
-          {/* marker dot follows smoothly */}
+          {/* marker dot follows smoothly (rAF-updated) */}
           <motion.circle
             cx={pNow.x}
             cy={pNow.y}
             r="4.2"
             fill="white"
             initial={false}
-            // IMPORTANT: no spring here; direct follow looks smoother for scrubbing
             animate={{ cx: pNow.x, cy: pNow.y, opacity: hovered ? 1 : 0.75 }}
             transition={{ duration: 0.06, ease: "linear" }}
           />
@@ -530,6 +563,7 @@ function InsiderEdgeSnapLine({ hovered }: { hovered: boolean }) {
           animate={{ opacity: hovered && inside ? 1 : 0 }}
           transition={{ duration: 0.12 }}
         >
+          drag across chart
         </motion.div>
       </div>
     </div>
@@ -537,23 +571,21 @@ function InsiderEdgeSnapLine({ hovered }: { hovered: boolean }) {
 }
 
 
-
 function LawnMowerJumbotron({ hovered, href }: { hovered: boolean; href: string }) {
   const W = 520;
   const H = 160;
 
-  // mower moves left -> right, slower
   const mowerX = hovered ? 360 : 120;
   const mowWidth = hovered ? 330 : 40;
 
-  // mower geometry pairing so the mow strip stays centered under the deck
   const mowerGroupBaseY = 92;
   const deckCenterY = mowerGroupBaseY + 34;
   const mowStripH = 46;
   const mowStripY = Math.round(deckCenterY - mowStripH / 2);
 
-  // strip starts cleanly away from the house area
   const stripX = 160;
+
+  const BLEED = 18;
 
   return (
     <a
@@ -576,9 +608,7 @@ function LawnMowerJumbotron({ hovered, href }: { hovered: boolean; href: string 
       <div className="relative flex items-center justify-between px-3 pt-3">
         <div>
           <div className="text-xs text-white/80">N&amp;M Landscaping LLC</div>
-          <div className="mt-0.5 text-[11px] text-white/55">
-            
-          </div>
+          <div className="mt-0.5 text-[11px] text-white/55"></div>
         </div>
 
         <div className="rounded-full border border-emerald-200/20 bg-black/30 px-2.5 py-1 text-[10px] text-white/70">
@@ -588,30 +618,38 @@ function LawnMowerJumbotron({ hovered, href }: { hovered: boolean; href: string 
 
       <div className="relative px-3 pb-3 pt-2">
         <div className="relative rounded-md border border-white/10 bg-black/25 overflow-hidden">
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-7 bg-gradient-to-b from-black/35 to-transparent z-[2]" />
+
           <svg viewBox={`0 0 ${W} ${H}`} className="block h-[110px] w-full">
             <defs>
-              <linearGradient id="nmLawnAll" x1="0" x2="0" y1="0" y2="1">
-                <stop offset="0" stopColor="rgba(16,185,129,0.44)" />
-                <stop offset="1" stopColor="rgba(16,185,129,0.18)" />
+              <linearGradient id="nmLawnAll_A2" x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0" stopColor="rgba(16,185,129,0.42)" />
+                <stop offset="1" stopColor="rgba(16,185,129,0.16)" />
               </linearGradient>
 
-              <pattern
-                id="nmStripesAll"
-                width="14"
-                height="14"
-                patternUnits="userSpaceOnUse"
-                patternTransform="rotate(18)"
-              >
-                <rect width="14" height="14" fill="rgba(0,0,0,0)" />
-                <rect width="3" height="14" x="0" fill="rgba(255,255,255,0.05)" />
-              </pattern>
+      
+              <filter id="nmGrain_A2" x="-20%" y="-20%" width="140%" height="140%">
+                <feTurbulence
+                  type="fractalNoise"
+                  baseFrequency="0.85"
+                  numOctaves="2"
+                  stitchTiles="stitch"
+                  seed="2"
+                />
+                <feColorMatrix type="saturate" values="0" />
+                <feComponentTransfer>
+                  <feFuncA type="table" tableValues="0 0.10" />
+                </feComponentTransfer>
+              </filter>
 
-              <pattern id="nmMowed" width="10" height="10" patternUnits="userSpaceOnUse">
+          
+              <pattern id="nmMowed_A2" width="10" height="10" patternUnits="userSpaceOnUse">
                 <rect width="10" height="10" fill="rgba(255,255,255,0)" />
-                <rect width="10" height="2" y="0" fill="rgba(255,255,255,0.06)" />
+                <rect width="10" height="2" y="0" fill="rgba(255,255,255,0.05)" />
+                <rect width="10" height="2" y="5" fill="rgba(0,0,0,0.06)" />
               </pattern>
 
-              <filter id="nmSoftShadow" x="-30%" y="-30%" width="160%" height="160%">
+              <filter id="nmSoftShadow_A2" x="-30%" y="-30%" width="160%" height="160%">
                 <feDropShadow
                   dx="0"
                   dy="2"
@@ -619,21 +657,54 @@ function LawnMowerJumbotron({ hovered, href }: { hovered: boolean; href: string 
                   floodColor="rgba(0,0,0,0.45)"
                 />
               </filter>
+
+              <radialGradient id="nmVignette_A2" cx="55%" cy="40%" r="85%">
+                <stop offset="0" stopColor="rgba(255,255,255,0.05)" />
+                <stop offset="1" stopColor="rgba(0,0,0,0.22)" />
+              </radialGradient>
+
+              <linearGradient id="nmTopLift_A2" x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0" stopColor="rgba(255,255,255,0.08)" />
+                <stop offset="1" stopColor="rgba(255,255,255,0.00)" />
+              </linearGradient>
             </defs>
 
-            {/* grass */}
-            <rect x="0" y="0" width={W} height={H} fill="url(#nmLawnAll)" />
-            <rect x="0" y="0" width={W} height={H} fill="url(#nmStripesAll)" opacity="0.9" />
+            <rect
+              x={-BLEED}
+              y={-BLEED}
+              width={W + BLEED * 2}
+              height={H + BLEED * 2}
+              fill="url(#nmLawnAll_A2)"
+            />
+            <rect
+              x={-BLEED}
+              y={-BLEED}
+              width={W + BLEED * 2}
+              height={H + BLEED * 2}
+              filter="url(#nmGrain_A2)"
+              opacity={hovered ? 0.14 : 0.10}
+            />
 
-            {/* mowed strip */}
+            <rect x={-BLEED} y={-BLEED} width={W + BLEED * 2} height={48} fill="url(#nmTopLift_A2)" opacity="0.55" />
+
+
+            <rect
+              x={-BLEED}
+              y={-BLEED}
+              width={W + BLEED * 2}
+              height={H + BLEED * 2}
+              fill="url(#nmVignette_A2)"
+              opacity="0.55"
+            />
+
             <motion.rect
               x={stripX}
               y={mowStripY}
               height={mowStripH}
               rx="12"
-              fill="rgba(0,0,0,0.12)"
+              fill="rgba(0,0,0,0.10)"
               initial={false}
-              animate={{ width: mowWidth, opacity: hovered ? 0.92 : 0.45 }}
+              animate={{ width: mowWidth, opacity: hovered ? 0.85 : 0.35 }}
               transition={{ duration: 1.35, ease: "easeInOut" }}
             />
             <motion.rect
@@ -641,31 +712,31 @@ function LawnMowerJumbotron({ hovered, href }: { hovered: boolean; href: string 
               y={mowStripY}
               height={mowStripH}
               rx="12"
-              fill="url(#nmMowed)"
+              fill="url(#nmMowed_A2)"
               initial={false}
-              animate={{ width: mowWidth, opacity: hovered ? 0.55 : 0.18 }}
+              animate={{ width: mowWidth, opacity: hovered ? 0.50 : 0.18 }}
+              transition={{ duration: 1.35, ease: "easeInOut" }}
+            />
+            <motion.rect
+              x={stripX}
+              y={mowStripY}
+              height={mowStripH}
+              rx="12"
+              fill="rgba(255,255,255,0.06)"
+              initial={false}
+              animate={{ width: mowWidth, opacity: hovered ? 0.18 : 0.08 }}
               transition={{ duration: 1.35, ease: "easeInOut" }}
             />
 
-            {/* house */}
-            <g filter="url(#nmSoftShadow)" transform="translate(22,22)">
+
+            <g filter="url(#nmSoftShadow_A2)" transform="translate(22,22)">
               <path
-                d="
-                  M 10 44
-                  L 46 16
-                  L 82 44
-                  L 82 86
-                  Q 82 94 74 94
-                  L 18 94
-                  Q 10 94 10 86
-                  Z
-                "
+                d="M 10 44 L 46 16 L 82 44 L 82 86 Q 82 94 74 94 L 18 94 Q 10 94 10 86 Z"
                 fill="rgba(255,255,255,0.08)"
                 stroke="rgba(255,255,255,0.92)"
                 strokeWidth="4.5"
                 strokeLinejoin="round"
               />
-
               <path
                 d="M66 22 L66 6 L78 6 L78 30"
                 fill="none"
@@ -673,16 +744,8 @@ function LawnMowerJumbotron({ hovered, href }: { hovered: boolean; href: string 
                 strokeWidth="3.5"
                 strokeLinecap="round"
               />
-
               <path
-                d="
-                  M 42 94
-                  L 42 70
-                  Q 42 64 48 64
-                  L 52 64
-                  Q 58 64 58 70
-                  L 58 94
-                "
+                d="M 42 94 L 42 70 Q 42 64 48 64 L 52 64 Q 58 64 58 70 L 58 94"
                 fill="rgba(0,0,0,0.18)"
                 stroke="rgba(255,255,255,0.22)"
                 strokeWidth="2"
@@ -726,14 +789,13 @@ function LawnMowerJumbotron({ hovered, href }: { hovered: boolean; href: string 
               </g>
             </g>
 
-            {/* mower */}
+       
             <motion.g
               initial={false}
               animate={{ x: mowerX }}
               transition={{ duration: 1.35, ease: "easeInOut" }}
             >
               <g transform="translate(70,92)">
-                {/* handle */}
                 <path
                   d="M18 38 L6 14"
                   fill="none"
@@ -756,19 +818,13 @@ function LawnMowerJumbotron({ hovered, href }: { hovered: boolean; href: string 
                   strokeLinecap="round"
                 />
 
-                {/* deck */}
                 <path
-                  d="M18 26
-                     C20 18, 34 14, 48 18
-                     C58 21, 60 34, 54 40
-                     C48 46, 26 46, 18 40
-                     C14 36, 14 31, 18 26 Z"
+                  d="M18 26 C20 18, 34 14, 48 18 C58 21, 60 34, 54 40 C48 46, 26 46, 18 40 C14 36, 14 31, 18 26 Z"
                   fill="rgba(255,255,255,0.14)"
                   stroke="rgba(255,255,255,0.34)"
                   strokeWidth="2"
                 />
 
-                {/* engine */}
                 <rect
                   x="33"
                   y="18"
@@ -780,16 +836,14 @@ function LawnMowerJumbotron({ hovered, href }: { hovered: boolean; href: string 
                   strokeWidth="1.5"
                 />
 
-                {/* wheels */}
                 <circle cx="26" cy="44" r="6.2" fill="rgba(255,255,255,0.86)" />
                 <circle cx="52" cy="44" r="6.2" fill="rgba(255,255,255,0.86)" />
                 <circle cx="26" cy="44" r="2.2" fill="rgba(0,0,0,0.25)" />
                 <circle cx="52" cy="44" r="2.2" fill="rgba(0,0,0,0.25)" />
 
-                {/* clippings */}
                 <motion.g
                   initial={false}
-                  animate={{ opacity: hovered ? 0.65 : 0 }}
+                  animate={{ opacity: hovered ? 0.60 : 0 }}
                   transition={{ duration: 0.22 }}
                 >
                   {Array.from({ length: 9 }).map((_, i) => (
@@ -822,6 +876,7 @@ function LawnMowerJumbotron({ hovered, href }: { hovered: boolean; href: string 
     </a>
   );
 }
+
 
 function AdditionOnlyCalc({ hovered }: { hovered: boolean }) {
   const [expr, setExpr] = useState("2+2");
@@ -1066,7 +1121,7 @@ export default function Home() {
   return (
     <>
       <FixedBg />
-      {/* ✅ removed "as any" to stop build failure */}
+
       <DimensionHero active={tab} onSelect={setTab} />
 
       <section className="relative z-10 text-white -mt-6 md:-mt-10">
@@ -1429,13 +1484,13 @@ export default function Home() {
                             Java, OOP Design
                           </div>
 
-                          {/* ✅ CHANGE #2: bullet points ABOVE the game */}
+                        
                           <ul className="mt-3 list-disc pl-5 text-sm text-white/85 space-y-1">
                             <li>Encapsulation + polymorphism for piece design.</li>
                             <li>Rotation edge cases validated with tests.</li>
                           </ul>
 
-                          {/* the square mini tetris visual */}
+                  
                           <TetrisMini hovered={tetrisHovered} />
                         </div>
 
