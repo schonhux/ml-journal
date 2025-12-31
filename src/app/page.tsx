@@ -1,7 +1,14 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import {
+  AnimatePresence,
+  motion,
+  useMotionValue,
+  useSpring,
+  useTransform,
+  useMotionValueEvent,
+} from "framer-motion";
 import Image from "next/image";
 
 import DimensionHero from "@/components/DimensionHero";
@@ -27,20 +34,18 @@ function ProjectCard({
         "shadow-[0_0_0_1px_rgba(255,255,255,0.02)_inset]",
         "hover:border-white/20 hover:bg-white/[0.06]",
         "hover:shadow-[0_10px_30px_rgba(0,0,0,0.35)]",
-        "flex flex-col justify-between",
-        "relative overflow-hidden",
+        "flex flex-col justify-between relative overflow-hidden",
         className,
       ].join(" ")}
     >
-      {/* subtle top glow */}
       <div className="pointer-events-none absolute inset-x-0 top-0 h-16 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
         <div className="h-full w-full bg-gradient-to-b from-white/10 to-transparent" />
       </div>
-
       {children}
     </motion.div>
   );
 }
+
 
 function CrowdJumbotron({ hovered }: { hovered: boolean }) {
   const game = useMemo(
@@ -232,7 +237,7 @@ function InsiderEdgeSnapLine({ hovered }: { hovered: boolean }) {
   const padX = 10;
   const padY = 12;
 
-  const series = useMemo(
+  const series = React.useMemo(
     () => [
       184.2, 184.9, 185.4, 186.1, 187.0, 188.2, 189.7, 191.4, 193.0, 194.6,
       196.2, 197.9, 199.4, 200.6, 201.3, 202.2, 201.8, 195.2, 193.4, 194.1,
@@ -244,7 +249,7 @@ function InsiderEdgeSnapLine({ hovered }: { hovered: boolean }) {
   const min = Math.min(...series);
   const max = Math.max(...series);
 
-  const pts = useMemo(() => {
+  const pts = React.useMemo(() => {
     return series.map((v, i) => {
       const x = padX + (i * (w - padX * 2)) / Math.max(1, series.length - 1);
       const t = (v - min) / Math.max(1e-6, max - min);
@@ -253,153 +258,125 @@ function InsiderEdgeSnapLine({ hovered }: { hovered: boolean }) {
     });
   }, [series, min, max, w, h, padX, padY]);
 
+  const n = pts.length;
+
   const snapIndex = 16;
   const snapPt = pts[snapIndex];
 
-  const postEventPts = pts.slice(snapIndex);
-  const crashLow = useMemo(() => {
+  const postEventPts = React.useMemo(() => pts.slice(snapIndex), [pts]);
+  const crashLow = React.useMemo(() => {
     return postEventPts.reduce((best, p) => (p.v < best.v ? p : best), postEventPts[0]);
   }, [postEventPts]);
 
-  const prePath = useMemo(() => {
+  const prePath = React.useMemo(() => {
     return pts
       .slice(0, snapIndex + 1)
       .map((p, i) => (i === 0 ? `M ${p.x} ${p.y}` : `L ${p.x} ${p.y}`))
       .join(" ");
   }, [pts]);
 
-  const postPath = useMemo(() => {
+  const postPath = React.useMemo(() => {
     return pts
       .slice(snapIndex)
       .map((p, i) => (i === 0 ? `M ${p.x} ${p.y}` : `L ${p.x} ${p.y}`))
       .join(" ");
   }, [pts]);
 
-  const fullLinePath = useMemo(() => {
+  const fullLinePath = React.useMemo(() => {
     return pts.map((p, i) => (i === 0 ? `M ${p.x} ${p.y}` : `L ${p.x} ${p.y}`)).join(" ");
   }, [pts]);
 
-  const areaPath = useMemo(() => {
+  const areaPath = React.useMemo(() => {
     return `${fullLinePath} L ${w - padX} ${h - padY} L ${padX} ${h - padY} Z`;
   }, [fullLinePath, w, h, padX, padY]);
 
-  // -------- Smooth scrubbing state --------
-  const [inside, setInside] = React.useState(false);
-  const [scrubT, setScrubT] = React.useState<number | null>(null); // continuous param in [0, n-1]
+  const clamp = (x: number, a: number, b: number) => Math.max(a, Math.min(b, x));
 
-  // rAF throttle to keep it smooth and avoid rerender storm
-  const rafRef = React.useRef<number | null>(null);
-  const pendingClientXRef = React.useRef<number | null>(null);
-  const chartRectRef = React.useRef<DOMRect | null>(null);
+  const interpAtT = React.useCallback(
+    (tt: number) => {
+      const t = clamp(tt, 0, n - 1);
+      const i0 = Math.floor(t);
+      const i1 = Math.min(n - 1, i0 + 1);
+      const a = t - i0;
+      const p0 = pts[i0];
+      const p1 = pts[i1];
+      return {
+        x: p0.x + (p1.x - p0.x) * a,
+        y: p0.y + (p1.y - p0.y) * a,
+        v: p0.v + (p1.v - p0.v) * a,
+        t,
+      };
+    },
+    [pts, n]
+  );
 
-  const n = pts.length;
+  const defaultT = hovered ? crashLow.i : snapPt.i;
+  const targetT = useMotionValue(defaultT);
+  const springT = useSpring(targetT, {
+    stiffness: 2800,
+    damping: 70,
+    mass: 0.12,
+  });
 
-  // Default target when not scrubbing:
-  // - not hovered: event
-  // - hovered: crash low
-  const defaultTarget = hovered ? crashLow : snapPt;
+  const mvX = useTransform(springT, (t) => interpAtT(t).x);
+  const mvY = useTransform(springT, (t) => interpAtT(t).y);
 
-  // Convert continuous t -> interpolated point on polyline (clamped)
-  const interpPoint = React.useMemo(() => {
-    const clamp = (x: number, a: number, b: number) => Math.max(a, Math.min(b, x));
+  const crossLeft = useTransform(mvX, (x) => `${(x / w) * 100}%`);
+  const tipLeft = useTransform(mvX, (x) => `calc(${(x / w) * 100}% - 28px)`);
 
-    if (scrubT == null) return defaultTarget;
+  const [ui, setUi] = React.useState(() => interpAtT(defaultT));
+  const uiRaf = React.useRef<number | null>(null);
 
-    const tt = clamp(scrubT, 0, n - 1);
-    const i0 = Math.floor(tt);
-    const i1 = Math.min(n - 1, i0 + 1);
-    const alpha = tt - i0;
+  useMotionValueEvent(springT, "change", (t) => {
+    if (uiRaf.current != null) return;
+    uiRaf.current = requestAnimationFrame(() => {
+      uiRaf.current = null;
+      setUi(interpAtT(t));
+    });
+  });
 
-    const p0 = pts[i0];
-    const p1 = pts[i1];
-
-    return {
-      x: p0.x + (p1.x - p0.x) * alpha,
-      y: p0.y + (p1.y - p0.y) * alpha,
-      v: p0.v + (p1.v - p0.v) * alpha,
-      i: tt,
+  React.useEffect(() => {
+    return () => {
+      if (uiRaf.current != null) cancelAnimationFrame(uiRaf.current);
     };
-  }, [scrubT, defaultTarget, pts, n]);
+  }, []);
 
-  const pNow = interpPoint;
+  const chartRef = React.useRef<HTMLDivElement | null>(null);
+  const [inside, setInside] = React.useState(false);
 
-  const priceNow = pNow.v;
+  const onMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!hovered || !chartRef.current) return;
+    const rect = chartRef.current.getBoundingClientRect();
+    const xPx = clamp(e.clientX - rect.left, 0, rect.width);
+    const svgX = (xPx / Math.max(1, rect.width)) * w;
+
+    const x0 = pts[0].x;
+    const x1 = pts[n - 1].x;
+
+    const ratio = clamp((svgX - x0) / Math.max(1e-6, x1 - x0), 0, 1);
+    targetT.set(ratio * (n - 1));
+  };
+
+  React.useEffect(() => {
+    if (!inside) targetT.set(defaultT);
+  }, [defaultT, inside, targetT]);
+
+  const priceNow = ui.v;
   const start = pts[0].v;
   const change = priceNow - start;
   const changePct = (change / start) * 100;
 
-  const crossX = pNow.x;
-
   const label = (() => {
-    const t = typeof pNow.i === "number" ? pNow.i : snapIndex;
+    const t = ui.t;
     if (Math.abs(t - snapIndex) < 0.35) return "event";
     if (t > snapIndex + 0.35) return "crash";
     return "trend";
   })();
 
-  const bottomText =
-    typeof pNow.i === "number" && pNow.i > snapIndex
-      ? "sell pressure → liquidity gap"
-      : "anomaly spike detected";
-
-  // Map clientX -> continuous t, clamped to chart x-range
-  const clientXToT = React.useCallback(
-    (clientX: number) => {
-      const rect = chartRectRef.current;
-      if (!rect) return null;
-
-      const xPx = clientX - rect.left;
-      const xClamped = Math.max(0, Math.min(rect.width, xPx));
-
-      // map DOM pixels to SVG x
-      const svgX = (xClamped / rect.width) * w;
-
-      const x0 = pts[0].x;
-      const x1 = pts[n - 1].x;
-
-      const ratio = (svgX - x0) / Math.max(1e-6, x1 - x0);
-      const t = ratio * (n - 1);
-
-      // clamp to [0, n-1]
-      return Math.max(0, Math.min(n - 1, t));
-    },
-    [pts, n, w]
-  );
-
-  const scheduleScrub = React.useCallback(
-    (clientX: number) => {
-      pendingClientXRef.current = clientX;
-      if (rafRef.current != null) return;
-
-      rafRef.current = window.requestAnimationFrame(() => {
-        rafRef.current = null;
-        const cx = pendingClientXRef.current;
-        if (cx == null) return;
-
-        const t = clientXToT(cx);
-        if (t == null) return;
-
-        setScrubT(t);
-      });
-    },
-    [clientXToT]
-  );
-
-  React.useEffect(() => {
-    return () => {
-      if (rafRef.current != null) window.cancelAnimationFrame(rafRef.current);
-    };
-  }, []);
-
-  const onMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!hovered) return;
-    // reuse cached rect so fast moves don’t constantly call getBoundingClientRect()
-    scheduleScrub(e.clientX);
-  };
+  const bottomText = ui.t > snapIndex ? "sell pressure → liquidity gap" : "anomaly spike detected";
 
   return (
     <div className="mt-3 rounded-md border border-white/15 bg-white/5 p-3 relative overflow-hidden">
-      {/* top row */}
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="text-xs text-white/70">InsiderEdge</div>
@@ -418,7 +395,6 @@ function InsiderEdgeSnapLine({ hovered }: { hovered: boolean }) {
         </div>
       </div>
 
-      {/* price row */}
       <div className="mt-2 flex items-end justify-between gap-3">
         <div className="text-sm text-white/90 font-medium tabular-nums">
           ${priceNow.toFixed(2)}
@@ -438,35 +414,31 @@ function InsiderEdgeSnapLine({ hovered }: { hovered: boolean }) {
 
       {/* chart */}
       <div
+        ref={chartRef}
         className="mt-3 relative"
-        onMouseEnter={(e) => {
-          setInside(true);
-          chartRectRef.current = e.currentTarget.getBoundingClientRect();
-        }}
-        onMouseLeave={() => {
+        onPointerEnter={() => setInside(true)}
+        onPointerLeave={() => {
           setInside(false);
-          setScrubT(null);
-          chartRectRef.current = null;
-          pendingClientXRef.current = null;
+          targetT.set(defaultT);
         }}
-        onMouseMove={onMove}
+        onPointerMove={onMove}
       >
         {/* crosshair line */}
         <motion.div
           className="pointer-events-none absolute top-0 bottom-[18px] w-px bg-white/20"
-          style={{ left: `${(crossX / w) * 100}%` }}
+          style={{ left: crossLeft }}
           initial={false}
           animate={{ opacity: hovered ? 1 : 0 }}
-          transition={{ duration: 0.08, ease: "linear" }}
+          transition={{ duration: 0.06, ease: "linear" }}
         />
 
         {/* tooltip */}
         <motion.div
           className="pointer-events-none absolute -top-2"
-          style={{ left: `calc(${(crossX / w) * 100}% - 28px)` }}
+          style={{ left: tipLeft }}
           initial={false}
           animate={{ opacity: hovered ? 1 : 0, y: hovered ? 0 : 4 }}
-          transition={{ duration: 0.1, ease: "easeOut" }}
+          transition={{ duration: 0.08, ease: "easeOut" }}
         >
           <div className="rounded-md border border-white/15 bg-black/60 px-2 py-1 text-[10px] text-white/80 tabular-nums">
             {label} • ${priceNow.toFixed(2)}
@@ -481,7 +453,6 @@ function InsiderEdgeSnapLine({ hovered }: { hovered: boolean }) {
             </linearGradient>
           </defs>
 
-          {/* subtle horizontal grid */}
           <g opacity="0.16">
             {Array.from({ length: 5 }).map((_, i) => {
               const y = (i * h) / 4;
@@ -514,7 +485,7 @@ function InsiderEdgeSnapLine({ hovered }: { hovered: boolean }) {
             transition={{ duration: 0.12 }}
           />
 
-          {/* crash segment animates in on hover */}
+          {/* Crash Segment */}
           <AnimatePresence>
             {hovered && (
               <motion.path
@@ -531,19 +502,17 @@ function InsiderEdgeSnapLine({ hovered }: { hovered: boolean }) {
             )}
           </AnimatePresence>
 
-          {/* marker dot follows smoothly (rAF-updated) */}
+
           <motion.circle
-            cx={pNow.x}
-            cy={pNow.y}
             r="4.2"
             fill="white"
-            initial={false}
-            animate={{ cx: pNow.x, cy: pNow.y, opacity: hovered ? 1 : 0.75 }}
-            transition={{ duration: 0.06, ease: "linear" }}
+            cx={mvX}
+            cy={mvY}
+            style={{ opacity: hovered ? 1 : 0.75 }}
           />
         </svg>
 
-        {/* bottom row */}
+
         <div className="mt-2 min-h-[16px] text-[11px] text-white/60 flex items-center justify-between">
           <span className="text-white/55">market view</span>
           <motion.span
@@ -556,14 +525,13 @@ function InsiderEdgeSnapLine({ hovered }: { hovered: boolean }) {
           </motion.span>
         </div>
 
-        {/* hint only when inside + hovered */}
         <motion.div
           className="pointer-events-none absolute right-2 top-2 text-[10px] text-white/45"
           initial={false}
           animate={{ opacity: hovered && inside ? 1 : 0 }}
           transition={{ duration: 0.12 }}
         >
-          drag across chart
+          
         </motion.div>
       </div>
     </div>
