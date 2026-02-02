@@ -538,7 +538,6 @@ function InsiderEdgeSnapLine({ hovered }: { hovered: boolean }) {
   );
 }
 
-
 function LawnMowerJumbotron({ hovered, href }: { hovered: boolean; href: string }) {
   const W = 520;
   const H = 160;
@@ -1126,12 +1125,12 @@ export default function Home() {
                       State University with a strong focus on Infrastructure,
                       Systems Reliability, and applied Machine Learning. I’m
                       passionate about building projects that bridge technical
-                      depth with real-world impact — from designing full-stack
+                      depth with real-world impact. From designing full-stack
                       web applications to experimenting with machine learning
                       pipelines and applied AI systems. Outside of engineering,
                       you can find me in the gym lifting or hooping on the
                       courts. I always enjoy hanging with my friends and keeping
-                      myself busy.  I’m on the path to excellence — the never-ending journey of
+                      myself busy.  I’m on the path to excellence; the never-ending journey of
                       self-improvement.
                     </p>
                   </div>
@@ -1516,10 +1515,7 @@ export default function Home() {
                   <div className="prose prose-invert prose-zinc max-w-none">
                     <h2>Publications</h2>
                     <p>
-                      Coming soon: MDX write-ups with math and code. First up —
-                      calibrated probabilities in LightGBM for real-time sports
-                      inference, and a deep dive on the distinctions between
-                      Artificial Intelligence and Machine Learning.
+                      Coming soon: What is AI without Machine Learning?
                     </p>
                   </div>
                 )}
