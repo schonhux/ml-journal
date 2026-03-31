@@ -1137,127 +1137,119 @@ export default function Home() {
                 )}
 
                 {/* EXPERIENCE TAB */}
-                {tab === "experience" && (
-                  <div>
-                    <h2 className="text-2xl font-semibold">Experience</h2>
+{tab === "experience" && (
+  <div>
+    <h2 className="text-2xl font-semibold">Experience</h2>
 
-                    <ul className="mt-6 space-y-5">
-                      <li className="rounded-xl border border-white/10 bg-white/5 p-6">
-                        <div className="font-semibold text-lg">
-                          Berkley Technology Services — Site Reliability Engineer
-                        </div>
+    <ul className="mt-6 space-y-5">
+      {/* BERKLEY */}
+      <li className="rounded-xl border border-white/10 bg-white/5 p-6">
+        <div className="font-semibold text-lg">
+          Berkley Technology Services — Site Reliability Engineer
+        </div>
 
-                        <div className="mt-4">
-                          <div className="text-sm text-white/70 font-medium">
-                            Co-Op • Aug 2025 – Present
-                          </div>
-                          <ul className="mt-3 list-disc pl-5 text-sm text-white/85 space-y-2">
-                            <li>
-                              Collaborated with teams including InfoSec, Enterprise Architecture, and Database on
-                              Client Search pilots (ACS), to tune
-                              noisy monitoring alerts—improving signal quality
-                              and trust in observability.
-                            </li>
-                            <li>
-                              Automated an AppDynamics ACS Pilot reporting workflow for
-                              SLO information by scripting scheduled exports and table
-                              refreshes using a shell script
-                              + Windows Task Scheduler on a shared SolarWinds
-                              main poller server, saving every Monday morning to the appropriate spreadsheet.  
-                            </li>
-                            <li>
-                              Participated in PI Planning across BTS to review
-                              team progress, dependencies, backlog, and risks;
-                              presented updates on behalf of the SRE team, building a
-                              stronger understanding of cross-team delivery and
-                              how the business operates on the technical side.
-                            </li>
-                          </ul>
-                        </div>
+        <div className="mt-2 text-sm text-white/70">
+          Focused on reliability engineering, observability strategy, and automation across large-scale legacy systems.
+        </div>
 
-                        <div className="mt-5 pt-5 border-t border-white/10">
-                          <div className="text-sm text-white/70 font-medium">
-                            Intern • May 2025 – Aug 2025
-                          </div>
-                          <ul className="mt-3 list-disc pl-5 text-sm text-white/85 space-y-2">
-                            <li>
-                              Designed and automated secure credential workflows
-                              by integrating PowerShell, SQL, and REST APIs with
-                              AD, Delinea, and SolarWinds—reducing operational
-                              toil.
-                            </li>
-                            <li>
-                              Built Ansible playbooks to standardize system
-                              configurations across teams, preventing drift and
-                              enabling consistent deployments.
-                            </li>
-                            <li>
-                              Facilitated weekly stakeholder syncs to align
-                              engineers, managers, and partners—accelerating
-                              delivery and knowledge sharing.
-                            </li>
-                            <li>
-                              Grew hands-on in observability, CI/CD, and infra
-                              automation; balanced compliance with usability to
-                              drive adoption.
-                            </li>
-                          </ul>
-                        </div>
-                      </li>
+        {/* CO-OP */}
+        <div className="mt-4">
+          <div className="text-sm text-white/70 font-medium">
+            Co-Op • Aug 2025 – April 2026
+          </div>
 
-                      <li className="rounded-xl border border-white/10 bg-white/5 p-6">
-                        <div className="font-semibold text-lg">
-                          Freelance Web Developer — Self-Employed
-                        </div>
-                        <div className="text-sm text-white/70 font-medium mt-1">
-                          
-                        </div>
+          <ul className="mt-3 list-disc pl-5 text-sm text-white/85 space-y-2">
+            <li>
+              Designed and implemented an SRE-style Reliability Discovery Hub for a legacy multi-tenant insurance platform, translating business-critical workflows into measurable SLIs and service boundaries.
+            </li>
+            <li>
+              Mapped end-to-end business journeys to Tier-0 infrastructure and application dependencies (Kong, IBM Liberty, Db2, ACE), enabling dependency-aware monitoring and faster incident triage.
+            </li>
+            <li>
+              Defined user-centric reliability by anchoring SLIs to successful completion of customer workflows rather than infrastructure uptime, improving signal quality for on-call response.
+            </li>
+            <li>
+              Designed an MVP observability strategy using SolarWinds synthetics, AppDynamics, and Grafana to capture both top-line SLIs and deep diagnostic signals.
+            </li>
+            <li>
+              Partnered with application, middleware, and database teams to define ownership, escalation paths, and failure domains across a complex legacy architecture.
+            </li>
+          </ul>
+        </div>
 
-                        <div className="mt-4">
-                          <div className="text-sm text-white/80 font-semibold">
-                            DT Group LLC — Web Revamp & SEO Optimization
-                          </div>
-                          <div className="text-xs text-white/60 mt-0.5">
-                            Nov 2025 - Dec 2025
-                          </div>
-                          <ul className="mt-3 list-disc pl-5 text-sm text-white/85 space-y-2">
-                            <li>
-                              Led a site revamp and performed heavy SEO cleanup
-                              , improving site structure,
-                              metadata, and search readiness for a larger client.
-                            </li>
-                            <li>
-                              Streamlined content organization and navigation to
-                              improve discoverability and user flow while keeping
-                              performance and responsiveness in check. 
-                            </li>
-                          </ul>
-                        </div>
+        {/* INTERN */}
+        <div className="mt-5 pt-5 border-t border-white/10">
+          <div className="text-sm text-white/70 font-medium">
+            Intern • May 2025 – Aug 2025
+          </div>
 
-                        <div className="mt-5 pt-5 border-t border-white/10">
-                          <div className="text-sm text-white/80 font-semibold">
-                            N&amp;M Landscaping LLC — Website
-                          </div>
-                          <div className="text-xs text-white/60 mt-0.5">
-                            Feb 2025 - Mar 2025
-                          </div>
-                          <ul className="mt-3 list-disc pl-5 text-sm text-white/85 space-y-2">
-                            <li>
-                              Designed, built, and deployed N&M's company website
-                              using React, TypeScript, Tailwind CSS, and Supabase;
-                              hosted on Vercel.
-                            </li>
-                            <li>
-                              Shipped end-to-end: content structure, responsive
-                              UI, SEO/analytics, and contact/booking flows to
-                              improve lead conversion and site performance.
-                            </li>
-                          </ul>
-                        </div>
-                      </li>
-                    </ul>
-                  </div>
-                )}
+          <ul className="mt-3 list-disc pl-5 text-sm text-white/85 space-y-2">
+            <li>
+              Designed and implemented a secure RPA-based credential rotation system for SolarWinds WPM synthetic monitoring, eliminating manual updates where APIs were unavailable.
+            </li>
+            <li>
+              Built a hybrid automation architecture using Power Automate Cloud + Desktop to orchestrate UI-level credential updates through an RDP-launched fat client.
+            </li>
+            <li>
+              Integrated Delinea Secret Server APIs with on-prem automation via Microsoft Data Gateway, enabling secure, dynamic credential retrieval and propagation.
+            </li>
+            <li>
+              Eliminated manual credential update workflows, reducing operational risk and preventing monitoring outages caused by expired service account credentials.
+            </li>
+            <li>
+              Developed infrastructure automation using Ansible and PowerShell to standardize system configurations and reduce configuration drift across environments.
+            </li>
+          </ul>
+        </div>
+      </li>
+
+      {/* FREELANCE */}
+      <li className="rounded-xl border border-white/10 bg-white/5 p-6">
+        <div className="font-semibold text-lg">
+          Freelance Web Developer — Self-Employed
+        </div>
+
+        {/* DT GROUP */}
+        <div className="mt-4">
+          <div className="text-sm text-white/80 font-semibold">
+            DT Group LLC — Web Revamp & SEO Optimization
+          </div>
+          <div className="text-xs text-white/60 mt-0.5">
+            Nov 2025 - Dec 2025
+          </div>
+
+          <ul className="mt-3 list-disc pl-5 text-sm text-white/85 space-y-2">
+            <li>
+              Led a full-scale website revamp and SEO cleanup, improving site structure, metadata consistency, and search engine visibility.
+            </li>
+            <li>
+              Resolved complex Google Business Profile inconsistencies, consolidating duplicate listings and aligning business data across platforms to improve local SEO trust signals.
+            </li>
+          </ul>
+        </div>
+
+        {/* N&M */}
+        <div className="mt-5 pt-5 border-t border-white/10">
+          <div className="text-sm text-white/80 font-semibold">
+            N&amp;M Landscaping LLC — Website
+          </div>
+          <div className="text-xs text-white/60 mt-0.5">
+            Feb 2025 - Mar 2025
+          </div>
+
+          <ul className="mt-3 list-disc pl-5 text-sm text-white/85 space-y-2">
+            <li>
+              Designed, built, and deployed a full-stack business website using React, TypeScript, Tailwind CSS, and Supabase, hosted on Vercel.
+            </li>
+            <li>
+              Implemented responsive UI, SEO optimization, and customer inquiry workflows, improving lead conversion and overall user experience.
+            </li>
+          </ul>
+        </div>
+      </li>
+    </ul>
+  </div>
+)}
 
                 {/* PROJECTS TAB */}
                 {tab === "projects" && (
