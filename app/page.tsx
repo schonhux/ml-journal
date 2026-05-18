@@ -160,22 +160,21 @@ function AboutTab() {
           className="rounded-full border border-[#444] object-cover" />
         <div>
           <h1>Schon Huxley</h1>
-          <p className="text-sm" style={{marginBottom:0}}>Software Engineer · Open to Seattle, Chicago, California &amp; Remote</p>
+          <p className="text-sm" style={{marginBottom:0}}>Software Engineer · Seattle, WA</p>
         </div>
       </div>
 
       <p>
-        I like building systems where the <strong>backend, data flow, reliability layer, and user-facing product</strong> all
-        connect — not just writing features, but understanding how the whole system holds up under pressure.
+        I&apos;m an early-career Software Engineer and student at Iowa State University with a strong focus on
+        <strong> Infrastructure, Systems Reliability, and applied Machine Learning</strong>. I&apos;m passionate about building
+        projects that bridge technical depth with real-world impact.
       </p>
       <p>
-        At <strong>Berkley Technology Services</strong>, I built observability strategies, automated credential rotation,
-        and designed SLI frameworks for legacy insurance platforms. This summer I&apos;m joining <strong>Lenovo</strong> to
-        work on the <strong>Qira AI Platform</strong>, focused on reliability engineering and DevOps automation
-        for cross-device AI systems.
+        From designing full-stack web applications to experimenting with machine learning pipelines and applied AI systems.
       </p>
       <p>
-        Outside of engineering, I&apos;m usually lifting, hooping, or chasing the next level of self-improvement.
+        Outside of engineering, you can find me in the gym lifting or hooping on the courts. I always enjoy hanging with
+        my friends and keeping myself busy. I&apos;m on the path to excellence; the never-ending journey of self-improvement.
       </p>
 
       <h2>Education</h2>
@@ -183,14 +182,13 @@ function AboutTab() {
         <div className="exp-header">
           <div>
             <strong>Iowa State University</strong>
-            <div className="exp-role">B.S. Software Engineering</div>
           </div>
-          <span className="exp-date">Aug 2023 – May 2027</span>
         </div>
         <ul className="mt-2">
           <li>Phi Gamma Delta (Social Chair)</li>
-          <li>AI &amp; ML Club · Robotics Club · Wrestling Club</li>
-          <li>Dean&apos;s List (Fall 2023)</li>
+          <li>AI &amp; ML Club</li>
+          <li>Robotics Club</li>
+          <li>Wrestling Club</li>
         </ul>
       </div>
     </div>
