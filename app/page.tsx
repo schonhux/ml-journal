@@ -59,7 +59,6 @@ type FileItem = {
 const FILES: FileItem[] = [
   { name: "schon-huxley", icon: "▾", color: "#e8ab53", id: "root", indent: 0, isFolder: true, isOpen: true },
   { name: "Welcome", icon: "◈", color: "#007acc", id: "welcome", indent: 1, desc: "Home — About me, quick links" },
-  { name: "about.md", icon: "M↓", color: "#519aba", id: "about", indent: 1, desc: "Bio, education, interests" },
   { name: "experience.md", icon: "M↓", color: "#519aba", id: "experience", indent: 1, desc: "SRE @ Berkley, Incoming @ Lenovo" },
   { name: "projects", icon: "▾", color: "#e8ab53", id: "proj-folder", indent: 1, isFolder: true, isOpen: true },
   { name: "betting-engine.tsx", icon: "TS", color: "#519aba", id: "proj-betting", indent: 2, desc: "Real-time ML betting predictions" },
@@ -77,14 +76,14 @@ function tabIcon(id: string) {
   if (id === "welcome") return "◈";
   if (id === "skills") return "{}";
   if (id === "resume") return "◉";
-  if (id.startsWith("about") || id.startsWith("experience")) return "M↓";
+  if (id.startsWith("experience")) return "M↓";
   return "TS";
 }
 function tabColor(id: string) {
   if (id === "welcome") return "#007acc";
   if (id === "skills") return "#e8ab53";
   if (id === "resume") return "#f44747";
-  if (id.startsWith("about") || id.startsWith("experience")) return "#519aba";
+  if (id.startsWith("experience")) return "#519aba";
   return "#519aba";
 }
 
@@ -128,17 +127,18 @@ function WelcomeTab({ onOpen }: { onOpen: (id: string) => void }) {
         </div>
       </div>
 
-      <p className="text-[#999] text-sm mb-6 leading-relaxed max-w-lg font-sans">
-        I build systems where the backend, data flow, reliability layer, and user-facing product all connect.
-        Focused on infrastructure, observability, and applied ML.
+      <p className="text-[#999] text-sm mb-6 leading-relaxed max-w-2xl font-sans">
+        I&apos;m an early-career Software Engineer and student at Iowa State University with a strong focus on Infrastructure,
+        Systems Reliability, and applied Machine Learning. I&apos;m passionate about building projects that bridge technical
+        depth with real-world impact. From designing full-stack web applications to experimenting with machine learning
+        pipelines and applied AI systems. Outside of engineering, you can find me in the gym lifting or hooping on the
+        courts. I always enjoy hanging with my friends and keeping myself busy. I&apos;m on the path to excellence; the
+        never-ending journey of self-improvement.
       </p>
 
       <div className="mb-8">
         <h2 className="text-xs uppercase tracking-widest text-[#888] mb-3 font-sans">Start</h2>
         <div className="space-y-1">
-          <button className="welcome-link" onClick={() => onOpen("about")}>
-            <span className="text-[#519aba] text-xs font-mono">M↓</span> About Me
-          </button>
           <button className="welcome-link" onClick={() => onOpen("experience")}>
             <span className="text-[#519aba] text-xs font-mono">M↓</span> Experience
           </button>
@@ -188,42 +188,6 @@ function WelcomeTab({ onOpen }: { onOpen: (id: string) => void }) {
           <a href="https://www.instagram.com/schonhux/" target="_blank" rel="noopener noreferrer" className="text-[#3794ff] hover:underline">Instagram</a>
           <a href="mailto:schon.huxley@gmail.com" className="text-[#3794ff] hover:underline">Email</a>
         </div>
-      </div>
-    </div>
-  );
-}
-
-function AboutTab() {
-  return (
-    <div className="md-preview p-6 max-w-3xl font-sans">
-      <div className="flex items-center gap-4 mb-6">
-        <Image src="/images/profile.png" alt="Schon Huxley" width={64} height={64}
-          className="rounded-full border border-[#444] object-cover" />
-        <div>
-          <h1>Schon Huxley</h1>
-          <p className="text-sm" style={{marginBottom:0}}>Software Engineer · Seattle, WA</p>
-        </div>
-      </div>
-
-      <p>
-        I build systems where the <strong>backend, data flow, reliability layer, and user-facing product</strong> all connect.
-        Focused on infrastructure, observability, and applied ML.
-      </p>
-
-      <h2>Education</h2>
-      <div className="exp-card">
-        <div className="exp-header">
-          <div>
-            <strong>Iowa State University</strong>
-          </div>
-          <span className="exp-date">Aug 2023 – May 2027</span>
-        </div>
-        <ul className="mt-2">
-          <li>Phi Gamma Delta (Social Chair)</li>
-          <li>AI &amp; ML Club</li>
-          <li>Robotics Club</li>
-          <li>Wrestling Club</li>
-        </ul>
       </div>
     </div>
   );
@@ -781,7 +745,6 @@ const CMD_ITEMS: CmdItem[] = [
   { label: "Open Experience", icon: "M↓", action: "experience" },
   { label: "Open Projects", icon: "TS", action: "proj-betting" },
   { label: "Open Skills", icon: "{}", action: "skills" },
-  { label: "Open About", icon: "M↓", action: "about" },
   { label: "Open Contact", icon: "TS", action: "contact" },
   { label: "Open GitHub", icon: "⌥", action: "ext:https://github.com/schonhux" },
   { label: "Open LinkedIn", icon: "↗", action: "ext:https://www.linkedin.com/in/schon-huxley/" },
@@ -867,9 +830,8 @@ function TerminalPanel({ onNavigate, onClose }: { onNavigate: (id: string) => vo
     const newHistory: TermLine[] = [...history, { type: "input", text: cmd }];
 
     const responses: Record<string, string | (() => void)> = {
-      help: "Available commands: whoami, about, experience, projects, skills, resume, contact, clear, exit",
+      help: "Available commands: whoami, experience, projects, skills, resume, contact, clear, exit",
       whoami: "Schon Huxley — SWE @ Iowa State, SRE intern, systems builder",
-      about: () => { onNavigate("about"); newHistory.push({ type: "output", text: "Opening about.md..." }); },
       experience: () => { onNavigate("experience"); newHistory.push({ type: "output", text: "Opening experience.md..." }); },
       projects: () => { onNavigate("proj-betting"); newHistory.push({ type: "output", text: "Opening projects/betting-engine.tsx..." }); },
       skills: () => { onNavigate("skills"); newHistory.push({ type: "output", text: "Opening skills.json..." }); },
@@ -996,7 +958,6 @@ export default function VSCodePortfolio() {
   const renderContent = () => {
     switch (activeFile) {
       case "welcome": return <WelcomeTab onOpen={openFile} />;
-      case "about": return <AboutTab />;
       case "experience": return <ExperienceTab />;
       case "proj-betting": return <ProjectBetting />;
       case "proj-insider": return <ProjectInsider />;
@@ -1045,7 +1006,7 @@ export default function VSCodePortfolio() {
           </button>
           <div className="mt-auto mb-2">
             <Image src="/images/profile.png" alt="Schon" width={28} height={28}
-              className="rounded-full border border-[#555] object-cover cursor-pointer" onClick={() => openFile("about")} />
+              className="rounded-full border border-[#555] object-cover cursor-pointer" onClick={() => openFile("welcome")} />
           </div>
         </div>
 
