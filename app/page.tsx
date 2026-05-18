@@ -2,6 +2,47 @@
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
+import type { IconType } from "react-icons";
+import {
+  SiAnsible,
+  SiApachekafka,
+  SiC,
+  SiConfluence,
+  SiCplusplus,
+  SiDatadog,
+  SiDocker,
+  SiDotnet,
+  SiDuckdb,
+  SiFastapi,
+  SiFirebase,
+  SiGit,
+  SiGithub,
+  SiGithubactions,
+  SiGo,
+  SiGrafana,
+  SiJavascript,
+  SiJira,
+  SiKubernetes,
+  SiLangchain,
+  SiLinux,
+  SiModelcontextprotocol,
+  SiMongodb,
+  SiNextdotjs,
+  SiNodedotjs,
+  SiPostgresql,
+  SiPrometheus,
+  SiPytorch,
+  SiPython,
+  SiReact,
+  SiRedis,
+  SiRiscv,
+  SiScikitlearn,
+  SiSharp,
+  SiSupabase,
+  SiTerraform,
+  SiTypescript,
+} from "react-icons/si";
+import { FaAws, FaChartLine, FaCode, FaDatabase, FaJava, FaMicrosoft, FaProjectDiagram, FaTerminal } from "react-icons/fa";
 
 /* ─── file tree types ─── */
 type FileItem = {
@@ -165,16 +206,8 @@ function AboutTab() {
       </div>
 
       <p>
-        I&apos;m an early-career Software Engineer and student at Iowa State University with a strong focus on
-        <strong> Infrastructure, Systems Reliability, and applied Machine Learning</strong>. I&apos;m passionate about building
-        projects that bridge technical depth with real-world impact.
-      </p>
-      <p>
-        From designing full-stack web applications to experimenting with machine learning pipelines and applied AI systems.
-      </p>
-      <p>
-        Outside of engineering, you can find me in the gym lifting or hooping on the courts. I always enjoy hanging with
-        my friends and keeping myself busy. I&apos;m on the path to excellence; the never-ending journey of self-improvement.
+        I build systems where the <strong>backend, data flow, reliability layer, and user-facing product</strong> all connect.
+        Focused on infrastructure, observability, and applied ML.
       </p>
 
       <h2>Education</h2>
@@ -313,6 +346,34 @@ function Tp({ children }: { children: React.ReactNode }) { return <span classNam
 function Nm({ children }: { children: React.ReactNode }) { return <span className="text-vsc-number">{children}</span>; }
 function Vr({ children }: { children: React.ReactNode }) { return <span className="text-vsc-variable">{children}</span>; }
 
+const TECH_COLORS: Record<string, string> = {
+  Python: "#3776AB",
+  LightGBM: "#4EC9B0",
+  Redis: "#FF4438",
+  DuckDB: "#FFF000",
+  FastAPI: "#009688",
+  "C#": "#512BD4",
+  ".NET": "#512BD4",
+  "ML.NET": "#512BD4",
+  "Azure Functions": "#0078D4",
+  SSA: "#C586C0",
+  React: "#61DAFB",
+  TypeScript: "#3178C6",
+  Supabase: "#3ECF8E",
+  "Tailwind CSS": "#38BDF8",
+  Vercel: "#FFFFFF",
+  Flask: "#FFFFFF",
+  Matplotlib: "#11557C",
+  "Math Parsing": "#DCDCaa",
+  Java: "#F89820",
+  "OOP Design": "#D7BA7D",
+  JUnit: "#25A162",
+};
+
+function techStyle(name: string): React.CSSProperties {
+  return { "--tech-color": TECH_COLORS[name] || "#4ec9b0" } as React.CSSProperties;
+}
+
 function ProjectSummary({ problem, architecture, stack, impact, links }: {
   problem: string;
   architecture: string;
@@ -328,7 +389,7 @@ function ProjectSummary({ problem, architecture, stack, impact, links }: {
       <p>{architecture}</p>
       <h3>Tech Stack</h3>
       <div className="tech-pills">
-        {stack.map((s) => <span key={s} className="tech-pill">{s}</span>)}
+        {stack.map((s) => <span key={s} className="tech-pill" style={techStyle(s)}>{s}</span>)}
       </div>
       <h3>Impact / What I Learned</h3>
       <p>{impact}</p>
@@ -531,27 +592,130 @@ function ProjectTetris() {
 }
 
 /* ─── skills with rendered grid + JSON toggle ─── */
-const SKILLS_DATA = {
-  languages: ["Python", "Go", "C/C++", "C#", ".NET", "Java", "TypeScript", "JavaScript", "SQL", "PowerShell"],
-  systems_backend: ["REST APIs", "Redis", "DuckDB", "FastAPI", "Distributed Pipelines", "Linux"],
-  cloud_devops: ["AWS", "Azure", "Terraform", "Docker", "Kubernetes", "Ansible", "CI/CD", "GitHub Actions"],
-  ai_ml: ["RAG-Systems", "MCP", "LightGBM", "ML.NET", "PyTorch", "Scikit-learn", "Feature Engineering"],
-  databases: ["PostgreSQL", "MongoDB", "Firebase", "Supabase"],
-  observability: ["Prometheus", "Grafana", "AppDynamics", "Datadog", "SolarWinds"],
-  engineering_tools: ["Git", "Jira", "Confluence"],
-  hardware: ["RISC-V Assembly", "VHDL", "Verilog", "Digital Logic Design", "QuestaSim/ModelSim"],
+type Skill = {
+  name: string;
+  href: string;
+  color: string;
+  Icon: IconType;
 };
+
+type SkillSection = {
+  title: string;
+  items: Skill[];
+};
+
+const SKILL_SECTIONS: SkillSection[] = [
+  {
+    title: "Languages",
+    items: [
+      { name: "Python", href: "https://www.python.org/", color: "#3776AB", Icon: SiPython },
+      { name: "Go", href: "https://go.dev/", color: "#00ADD8", Icon: SiGo },
+      { name: "C", href: "https://www.open-std.org/jtc1/sc22/wg14/", color: "#A8B9CC", Icon: SiC },
+      { name: "C++", href: "https://isocpp.org/", color: "#00599C", Icon: SiCplusplus },
+      { name: "C#", href: "https://learn.microsoft.com/en-us/dotnet/csharp/", color: "#512BD4", Icon: SiSharp },
+      { name: ".NET", href: "https://dotnet.microsoft.com/", color: "#512BD4", Icon: SiDotnet },
+      { name: "Java", href: "https://www.java.com/", color: "#F89820", Icon: FaJava },
+      { name: "TypeScript", href: "https://www.typescriptlang.org/", color: "#3178C6", Icon: SiTypescript },
+      { name: "JavaScript", href: "https://developer.mozilla.org/en-US/docs/Web/JavaScript", color: "#F7DF1E", Icon: SiJavascript },
+      { name: "SQL", href: "https://www.iso.org/standard/76583.html", color: "#6CA6D9", Icon: FaDatabase },
+      { name: "PowerShell", href: "https://learn.microsoft.com/en-us/powershell/", color: "#5391FE", Icon: FaTerminal },
+    ],
+  },
+  {
+    title: "ML & Modeling",
+    items: [
+      { name: "PyTorch", href: "https://pytorch.org/", color: "#EE4C2C", Icon: SiPytorch },
+      { name: "Scikit-learn", href: "https://scikit-learn.org/", color: "#F7931E", Icon: SiScikitlearn },
+      { name: "LightGBM", href: "https://lightgbm.readthedocs.io/", color: "#4EC9B0", Icon: FaProjectDiagram },
+      { name: "ML.NET", href: "https://dotnet.microsoft.com/en-us/apps/machinelearning-ai/ml-dotnet", color: "#512BD4", Icon: SiDotnet },
+      { name: "LangChain", href: "https://www.langchain.com/", color: "#1C3C3C", Icon: SiLangchain },
+      { name: "MCP", href: "https://modelcontextprotocol.io/", color: "#FFFFFF", Icon: SiModelcontextprotocol },
+    ],
+  },
+  {
+    title: "Backend",
+    items: [
+      { name: "FastAPI", href: "https://fastapi.tiangolo.com/", color: "#009688", Icon: SiFastapi },
+      { name: "Node.js", href: "https://nodejs.org/", color: "#5FA04E", Icon: SiNodedotjs },
+      { name: "Next.js", href: "https://nextjs.org/", color: "#FFFFFF", Icon: SiNextdotjs },
+      { name: "React", href: "https://react.dev/", color: "#61DAFB", Icon: SiReact },
+      { name: "Redis", href: "https://redis.io/", color: "#FF4438", Icon: SiRedis },
+      { name: "DuckDB", href: "https://duckdb.org/", color: "#FFF000", Icon: SiDuckdb },
+      { name: "Kafka", href: "https://kafka.apache.org/", color: "#FFFFFF", Icon: SiApachekafka },
+      { name: "PostgreSQL", href: "https://www.postgresql.org/", color: "#4169E1", Icon: SiPostgresql },
+      { name: "MongoDB", href: "https://www.mongodb.com/", color: "#47A248", Icon: SiMongodb },
+      { name: "Firebase", href: "https://firebase.google.com/", color: "#FFCA28", Icon: SiFirebase },
+      { name: "Supabase", href: "https://supabase.com/", color: "#3ECF8E", Icon: SiSupabase },
+    ],
+  },
+  {
+    title: "DevOps",
+    items: [
+      { name: "AWS", href: "https://aws.amazon.com/", color: "#FF9900", Icon: FaAws },
+      { name: "Azure", href: "https://azure.microsoft.com/", color: "#0078D4", Icon: FaMicrosoft },
+      { name: "Terraform", href: "https://www.terraform.io/", color: "#844FBA", Icon: SiTerraform },
+      { name: "Docker", href: "https://www.docker.com/", color: "#2496ED", Icon: SiDocker },
+      { name: "Kubernetes", href: "https://kubernetes.io/", color: "#326CE5", Icon: SiKubernetes },
+      { name: "Linux", href: "https://www.kernel.org/", color: "#FCC624", Icon: SiLinux },
+      { name: "Ansible", href: "https://www.ansible.com/", color: "#EE0000", Icon: SiAnsible },
+      { name: "GitHub Actions", href: "https://github.com/features/actions", color: "#2088FF", Icon: SiGithubactions },
+    ],
+  },
+  {
+    title: "Observability",
+    items: [
+      { name: "Git", href: "https://git-scm.com/", color: "#F05032", Icon: SiGit },
+      { name: "GitHub", href: "https://github.com/", color: "#FFFFFF", Icon: SiGithub },
+      { name: "Prometheus", href: "https://prometheus.io/", color: "#E6522C", Icon: SiPrometheus },
+      { name: "Grafana", href: "https://grafana.com/", color: "#F46800", Icon: SiGrafana },
+      { name: "Datadog", href: "https://www.datadoghq.com/", color: "#632CA6", Icon: SiDatadog },
+      { name: "AppDynamics", href: "https://www.appdynamics.com/", color: "#00A0DF", Icon: FaChartLine },
+      { name: "SolarWinds", href: "https://www.solarwinds.com/", color: "#F99D1C", Icon: FaProjectDiagram },
+    ],
+  },
+  {
+    title: "Engineering Tools",
+    items: [
+      { name: "Jira", href: "https://www.atlassian.com/software/jira", color: "#0052CC", Icon: SiJira },
+      { name: "Confluence", href: "https://www.atlassian.com/software/confluence", color: "#172B4D", Icon: SiConfluence },
+      { name: "Vercel", href: "https://vercel.com/", color: "#FFFFFF", Icon: SiNextdotjs },
+    ],
+  },
+  {
+    title: "Hardware & Architecture",
+    items: [
+      { name: "RISC-V", href: "https://riscv.org/", color: "#283272", Icon: SiRiscv },
+      { name: "VHDL", href: "https://standards.ieee.org/ieee/1076/6843/", color: "#F7DF1E", Icon: FaCode },
+      { name: "Verilog", href: "https://standards.ieee.org/ieee/1800/6700/", color: "#4EC9B0", Icon: FaCode },
+      { name: "ModelSim", href: "https://eda.sw.siemens.com/en-US/ic/modelsim/", color: "#00AEEF", Icon: FaCode },
+    ],
+  },
+];
 
 function SkillsGridView() {
   return (
-    <div className="skills-grid">
-      {Object.entries(SKILLS_DATA).map(([category, skills]) => (
-        <div key={category} className="skill-category">
-          <h3>{category.replace(/_/g, " ")}</h3>
-          <div className="skill-items">
-            {skills.map((s) => <span key={s} className="skill-item">{s}</span>)}
+    <div className="skills-showcase">
+      {SKILL_SECTIONS.map((section) => (
+        <section key={section.title} className="skills-section">
+          <h2>{section.title}</h2>
+          <div className="skill-icon-grid">
+            {section.items.map(({ name, href, color, Icon }) => (
+              <a
+                key={name}
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="skill-icon-card"
+                aria-label={`Open official ${name} site`}
+                title={name}
+                style={{ "--skill-color": color } as React.CSSProperties}
+              >
+                <Icon aria-hidden="true" />
+                <span>{name}</span>
+              </a>
+            ))}
           </div>
-        </div>
+        </section>
       ))}
     </div>
   );
@@ -564,25 +728,14 @@ function SkillsJsonView() {
       <CodeLine n={2}>{"  "}<Str>{'"languages"'}</Str>{": ["}<Str>{'"Python"'}</Str>{", "}<Str>{'"Go"'}</Str>{", "}<Str>{'"C/C++"'}</Str>{", "}<Str>{'"C#"'}</Str>{", "}<Str>{'".NET"'}</Str>{", "}<Str>{'"Java"'}</Str>{","}</CodeLine>
       <CodeLine n={3}>{"    "}<Str>{'"TypeScript"'}</Str>{", "}<Str>{'"JavaScript"'}</Str>{", "}<Str>{'"SQL"'}</Str>{", "}<Str>{'"PowerShell"'}</Str>{"],"}</CodeLine>
       <CodeLine n={4}>&nbsp;</CodeLine>
-      <CodeLine n={5}>{"  "}<Str>{'"systems_backend"'}</Str>{": ["}<Str>{'"REST APIs"'}</Str>{", "}<Str>{'"Redis"'}</Str>{", "}<Str>{'"DuckDB"'}</Str>{","}</CodeLine>
-      <CodeLine n={6}>{"    "}<Str>{'"FastAPI"'}</Str>{", "}<Str>{'"Distributed Pipelines"'}</Str>{", "}<Str>{'"Linux"'}</Str>{"],"}</CodeLine>
-      <CodeLine n={7}>&nbsp;</CodeLine>
-      <CodeLine n={8}>{"  "}<Str>{'"cloud_devops"'}</Str>{": ["}<Str>{'"AWS"'}</Str>{", "}<Str>{'"Azure"'}</Str>{", "}<Str>{'"Terraform"'}</Str>{", "}<Str>{'"Docker"'}</Str>{","}</CodeLine>
-      <CodeLine n={9}>{"    "}<Str>{'"Kubernetes"'}</Str>{", "}<Str>{'"Ansible"'}</Str>{", "}<Str>{'"CI/CD"'}</Str>{", "}<Str>{'"GitHub Actions"'}</Str>{"],"}</CodeLine>
+      <CodeLine n={5}>{"  "}<Str>{'"backend"'}</Str>{": ["}<Str>{'"FastAPI"'}</Str>{", "}<Str>{'"Node.js"'}</Str>{", "}<Str>{'"Next.js"'}</Str>{", "}<Str>{'"Redis"'}</Str>{", "}<Str>{'"DuckDB"'}</Str>{"],"}</CodeLine>
+      <CodeLine n={6}>&nbsp;</CodeLine>
+      <CodeLine n={7}>{"  "}<Str>{'"cloud_devops"'}</Str>{": ["}<Str>{'"AWS"'}</Str>{", "}<Str>{'"Azure"'}</Str>{", "}<Str>{'"Terraform"'}</Str>{", "}<Str>{'"Docker"'}</Str>{", "}<Str>{'"Kubernetes"'}</Str>{"],"}</CodeLine>
+      <CodeLine n={8}>&nbsp;</CodeLine>
+      <CodeLine n={9}>{"  "}<Str>{'"ai_ml"'}</Str>{": ["}<Str>{'"PyTorch"'}</Str>{", "}<Str>{'"Scikit-learn"'}</Str>{", "}<Str>{'"LightGBM"'}</Str>{", "}<Str>{'"ML.NET"'}</Str>{", "}<Str>{'"MCP"'}</Str>{"],"}</CodeLine>
       <CodeLine n={10}>&nbsp;</CodeLine>
-      <CodeLine n={11}>{"  "}<Str>{'"ai_ml"'}</Str>{": ["}<Str>{'"RAG-Systems"'}</Str>{", "}<Str>{'"MCP"'}</Str>{", "}<Str>{'"LightGBM"'}</Str>{", "}<Str>{'"ML.NET"'}</Str>{","}</CodeLine>
-      <CodeLine n={12}>{"    "}<Str>{'"PyTorch"'}</Str>{", "}<Str>{'"Scikit-learn"'}</Str>{", "}<Str>{'"Feature Engineering"'}</Str>{"],"}</CodeLine>
-      <CodeLine n={13}>&nbsp;</CodeLine>
-      <CodeLine n={14}>{"  "}<Str>{'"databases"'}</Str>{": ["}<Str>{'"PostgreSQL"'}</Str>{", "}<Str>{'"MongoDB"'}</Str>{", "}<Str>{'"Firebase"'}</Str>{", "}<Str>{'"Supabase"'}</Str>{"],"}</CodeLine>
-      <CodeLine n={15}>&nbsp;</CodeLine>
-      <CodeLine n={16}>{"  "}<Str>{'"observability"'}</Str>{": ["}<Str>{'"Prometheus"'}</Str>{", "}<Str>{'"Grafana"'}</Str>{", "}<Str>{'"AppDynamics"'}</Str>{","}</CodeLine>
-      <CodeLine n={17}>{"    "}<Str>{'"Datadog"'}</Str>{", "}<Str>{'"SolarWinds"'}</Str>{"],"}</CodeLine>
-      <CodeLine n={18}>&nbsp;</CodeLine>
-      <CodeLine n={19}>{"  "}<Str>{'"engineering_tools"'}</Str>{": ["}<Str>{'"Git"'}</Str>{", "}<Str>{'"Jira"'}</Str>{", "}<Str>{'"Confluence"'}</Str>{"],"}</CodeLine>
-      <CodeLine n={20}>&nbsp;</CodeLine>
-      <CodeLine n={21}>{"  "}<Str>{'"hardware"'}</Str>{": ["}<Str>{'"RISC-V Assembly"'}</Str>{", "}<Str>{'"VHDL"'}</Str>{", "}<Str>{'"Verilog"'}</Str>{","}</CodeLine>
-      <CodeLine n={22}>{"    "}<Str>{'"Digital Logic Design"'}</Str>{", "}<Str>{'"QuestaSim/ModelSim"'}</Str>{"]"}</CodeLine>
-      <CodeLine n={23}>{"}"}</CodeLine>
+      <CodeLine n={11}>{"  "}<Str>{'"observability"'}</Str>{": ["}<Str>{'"Prometheus"'}</Str>{", "}<Str>{'"Grafana"'}</Str>{", "}<Str>{'"AppDynamics"'}</Str>{", "}<Str>{'"Datadog"'}</Str>{", "}<Str>{'"SolarWinds"'}</Str>{"]"}</CodeLine>
+      <CodeLine n={12}>{"}"}</CodeLine>
     </div>
   );
 }
@@ -698,7 +851,7 @@ function CommandPalette({ onAction, onClose }: { onAction: (action: string) => v
 /* ═══════════════════════════════════════════════════════ */
 type TermLine = { type: "input" | "output"; text: string };
 
-function TerminalPanel({ onNavigate }: { onNavigate: (id: string) => void }) {
+function TerminalPanel({ onNavigate, onClose }: { onNavigate: (id: string) => void; onClose: () => void }) {
   const [history, setHistory] = useState<TermLine[]>([
     { type: "output", text: "Welcome to Schon's portfolio terminal. Type 'help' for commands." },
   ]);
@@ -714,7 +867,7 @@ function TerminalPanel({ onNavigate }: { onNavigate: (id: string) => void }) {
     const newHistory: TermLine[] = [...history, { type: "input", text: cmd }];
 
     const responses: Record<string, string | (() => void)> = {
-      help: "Available commands: whoami, about, experience, projects, skills, resume, contact, clear",
+      help: "Available commands: whoami, about, experience, projects, skills, resume, contact, clear, exit",
       whoami: "Schon Huxley — SWE @ Iowa State, SRE intern, systems builder",
       about: () => { onNavigate("about"); newHistory.push({ type: "output", text: "Opening about.md..." }); },
       experience: () => { onNavigate("experience"); newHistory.push({ type: "output", text: "Opening experience.md..." }); },
@@ -723,6 +876,8 @@ function TerminalPanel({ onNavigate }: { onNavigate: (id: string) => void }) {
       resume: () => { window.open("/images/SchonHux - Resume.pdf", "_blank"); newHistory.push({ type: "output", text: "Opening resume in new tab..." }); },
       contact: () => { onNavigate("contact"); newHistory.push({ type: "output", text: "Opening contact.ts..." }); },
       clear: "CLEAR",
+      exit: () => { newHistory.push({ type: "output", text: "Closing terminal..." }); onClose(); },
+      close: () => { newHistory.push({ type: "output", text: "Closing terminal..." }); onClose(); },
     };
 
     if (trimmed === "clear") {
@@ -748,7 +903,8 @@ function TerminalPanel({ onNavigate }: { onNavigate: (id: string) => void }) {
     <div className="terminal-panel" style={{ height: "180px" }}>
       <div className="terminal-header">
         <span className="tab-active">TERMINAL</span>
-        <span style={{ marginLeft: "auto", fontSize: "0.7rem", color: "#666" }}>bash</span>
+        <span className="terminal-shell-label">bash</span>
+        <button className="terminal-close" onClick={onClose} aria-label="Close terminal" title="Close terminal">✕</button>
       </div>
       <div className="terminal-body" ref={bodyRef}>
         {history.map((line, i) => (
@@ -955,7 +1111,7 @@ export default function VSCodePortfolio() {
           </div>
 
           {/* Terminal */}
-          {showTerminal && <TerminalPanel onNavigate={openFile} />}
+          {showTerminal && <TerminalPanel onNavigate={openFile} onClose={() => setShowTerminal(false)} />}
         </div>
       </div>
 
