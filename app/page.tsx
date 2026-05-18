@@ -219,7 +219,7 @@ function ExperienceTab() {
             <strong>Berkley Technology Services</strong>
             <div className="exp-role">Site Reliability Engineer</div>
           </div>
-          <span className="exp-date">May 2025 – Present</span>
+          <span className="exp-date">May 2025 – April 2026</span>
         </div>
 
         <div className="impact-tags">
