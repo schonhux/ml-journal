@@ -183,6 +183,7 @@ function AboutTab() {
           <div>
             <strong>Iowa State University</strong>
           </div>
+          <span className="exp-date">Aug 2023 – May 2027</span>
         </div>
         <ul className="mt-2">
           <li>Phi Gamma Delta (Social Chair)</li>
@@ -221,7 +222,7 @@ function ExperienceTab() {
             <strong>Berkley Technology Services</strong>
             <div className="exp-role">Site Reliability Engineer</div>
           </div>
-          <span className="exp-date">May 2025 – April 2026</span>
+          <span className="exp-date">May 2025 – Present</span>
         </div>
 
         <div className="impact-tags">
@@ -235,31 +236,32 @@ function ExperienceTab() {
 
         <Collapsible title="Reliability Discovery Hub" defaultOpen={true}>
           <ul>
-            <li>Designed and implemented an SRE-style Reliability Discovery Hub for a legacy multi-tenant insurance platform, translating business-critical workflows into measurable SLIs and service boundaries.</li>
-            <li>Mapped end-to-end business journeys to Tier-0 infrastructure and application dependencies (Kong, IBM Liberty, Db2, ACE), enabling dependency-aware monitoring and faster incident triage.</li>
-            <li>Defined user-centric reliability by anchoring SLIs to successful completion of customer workflows rather than infrastructure uptime, improving signal quality for on-call response.</li>
+            <li>Designed and implemented an SRE-style reliability framework for a legacy multi-tenant insurance platform spanning <strong>5+ environments</strong> and <strong>25+ service dependencies</strong>, translating critical workflows into measurable SLIs and service boundaries.</li>
+            <li>Mapped end-to-end application flows to Tier-0 infrastructure and dependencies (Kong, IBM Liberty, Db2, ACE), enabling dependency-aware monitoring and reducing mean time to triage for production incidents.</li>
+            <li>Anchored reliability signals to successful customer workflow completion rather than raw infrastructure uptime, improving the quality of alerts used by on-call teams.</li>
           </ul>
         </Collapsible>
 
         <Collapsible title="Observability Strategy & SLO Reporting">
           <ul>
-            <li>Designed an MVP observability strategy using SolarWinds synthetics, AppDynamics, and Grafana to capture both top-line SLIs and deep diagnostic signals.</li>
-            <li>Partnered with application, middleware, and database teams to define ownership, escalation paths, and failure domains across a complex legacy architecture.</li>
+            <li>Designed an MVP observability strategy using SolarWinds synthetics, AppDynamics, and Grafana to capture top-line SLIs and deep diagnostic signals across legacy production systems.</li>
+            <li>Led a cross-functional AppDynamics monitoring redesign for a critical ACS platform, reducing alert noise by <strong>70%+</strong>, eliminating false positives, and refocusing alerts on real failures.</li>
+            <li>Partnered with application, middleware, database, and RSS teams to define ownership, escalation paths, and failure domains across a complex legacy architecture.</li>
           </ul>
         </Collapsible>
 
         <Collapsible title="Credential Rotation Automation">
           <ul>
-            <li>Designed and implemented a secure RPA-based credential rotation system for SolarWinds WPM synthetic monitoring, eliminating manual updates where APIs were unavailable.</li>
-            <li>Built a hybrid automation architecture using Power Automate Cloud + Desktop to orchestrate UI-level credential updates through an RDP-launched fat client.</li>
-            <li>Integrated Delinea Secret Server APIs with on-prem automation via Microsoft Data Gateway, enabling secure, dynamic credential retrieval and propagation.</li>
+            <li>Engineered a secure automated credential rotation system integrating Active Directory, Delinea Secret Server, and SolarWinds WPM, managing <strong>500+ service accounts</strong> with <strong>100% audit compliance</strong>.</li>
+            <li>Built a hybrid automation architecture using Power Automate Cloud + Desktop to orchestrate UI-level credential updates through an RDP-launched fat client where APIs were unavailable.</li>
+            <li>Integrated Delinea Secret Server APIs with on-prem automation via Microsoft Data Gateway, enabling secure dynamic credential retrieval and reducing operational risk from expired credentials.</li>
           </ul>
         </Collapsible>
 
         <Collapsible title="Infrastructure & Automation">
           <ul>
-            <li>Eliminated manual credential update workflows, reducing operational risk and preventing monitoring outages caused by expired service account credentials.</li>
-            <li>Developed infrastructure automation using Ansible and PowerShell to standardize system configurations and reduce configuration drift across environments.</li>
+            <li>Built infrastructure automation and CI/CD pipelines with Ansible and PowerShell, reducing manual operational effort by <strong>50%</strong> and configuration drift by <strong>80%</strong> across production systems.</li>
+            <li>Standardized repeatable system configuration workflows across environments, improving release consistency and reducing manual maintenance burden.</li>
           </ul>
         </Collapsible>
       </div>
@@ -285,8 +287,8 @@ function ExperienceTab() {
         <Collapsible title="N&M Landscaping LLC — Website">
           <p className="text-xs" style={{color:"#666", marginBottom:"0.5rem"}}>Feb 2025 – Mar 2025</p>
           <ul>
-            <li>Designed, built, and deployed a full-stack business website using React, TypeScript, Tailwind CSS, and Supabase, hosted on Vercel.</li>
-            <li>Implemented responsive UI, SEO optimization, and customer inquiry workflows, improving lead conversion and overall user experience.</li>
+            <li>Designed, built, and deployed a production booking platform with full CRUD workflows using React, TypeScript, Tailwind CSS, and Supabase, hosted on Vercel.</li>
+            <li>Implemented responsive UI, SEO optimization, and customer inquiry workflows, increasing client acquisition by <strong>40%</strong>.</li>
           </ul>
         </Collapsible>
       </div>
