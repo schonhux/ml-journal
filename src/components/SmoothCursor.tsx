@@ -1,47 +1,64 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
+import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 
-/* Custom cursor: an instant dot + an eased trailing ring that grows
-   over interactive elements. Desktop / fine-pointer only. */
+/* Refined dot + ring cursor:
+   - dot: responsive spring
+   - ring: soft trailing spring, accent glow, slow-spinning accent arc,
+     and a subtle velocity-based squash-and-stretch (settles to a circle at rest)
+   - the ring color eases with the active tab accent (via --accent)
+   Desktop / fine-pointer only. */
 
 export default function SmoothCursor() {
-  const dotRef = useRef<HTMLDivElement>(null);
-  const ringRef = useRef<HTMLDivElement>(null);
+  const [enabled, setEnabled] = useState(false);
+
+  const x = useMotionValue(-100);
+  const y = useMotionValue(-100);
+  const s = useMotionValue(1); // hover scale target
+
+  const dotX = useSpring(x, { stiffness: 1100, damping: 48, mass: 0.25 });
+  const dotY = useSpring(y, { stiffness: 1100, damping: 48, mass: 0.25 });
+
+  const ringX = useSpring(x, { stiffness: 380, damping: 32, mass: 0.5 });
+  const ringY = useSpring(y, { stiffness: 380, damping: 32, mass: 0.5 });
+  const ringScale = useSpring(s, { stiffness: 300, damping: 24 });
+
+  // velocity-driven squash-and-stretch
+  const rot = useMotionValue(0);
+  const stretch = useMotionValue(0);
+  const rotS = useSpring(rot, { stiffness: 200, damping: 20 });
+  const stretchS = useSpring(stretch, { stiffness: 250, damping: 26 });
+  const scaleX = useTransform(stretchS, (v) => 1 + v * 0.35);
+  const scaleY = useTransform(stretchS, (v) => 1 - v * 0.22);
 
   useEffect(() => {
     if (!window.matchMedia("(pointer: fine)").matches) return;
+    setEnabled(true);
     document.body.classList.add("has-custom-cursor");
 
-    let mx = window.innerWidth / 2;
-    let my = window.innerHeight / 2;
-    let rx = mx;
-    let ry = my;
-    let hovering = false;
-    let down = false;
-    let raf = 0;
-
     const onMove = (e: MouseEvent) => {
-      mx = e.clientX;
-      my = e.clientY;
-      if (dotRef.current) {
-        dotRef.current.style.transform = `translate(${mx}px, ${my}px) translate(-50%, -50%)`;
-      }
+      x.set(e.clientX);
+      y.set(e.clientY);
     };
-    const onOver = (e: MouseEvent) => {
-      const t = e.target as HTMLElement | null;
-      hovering = !!t?.closest("a, button, [role='tab'], input, [data-cursor='hover']");
-    };
-    const onDown = () => (down = true);
-    const onUp = () => (down = false);
+    const isInteractive = (t: EventTarget | null) =>
+      !!(t as HTMLElement | null)?.closest(
+        "a, button, [role='tab'], input, [data-cursor='hover']"
+      );
+    const onOver = (e: MouseEvent) => s.set(isInteractive(e.target) ? 2 : 1);
+    const onDown = () => s.set(s.get() * 0.7);
+    const onUp = (e: MouseEvent) => s.set(isInteractive(e.target) ? 2 : 1);
 
+    let raf = 0;
     const loop = () => {
-      rx += (mx - rx) * 0.16;
-      ry += (my - ry) * 0.16;
-      const scale = (hovering ? 1.9 : 1) * (down ? 0.8 : 1);
-      if (ringRef.current) {
-        ringRef.current.style.transform = `translate(${rx}px, ${ry}px) translate(-50%, -50%) scale(${scale})`;
-        ringRef.current.style.opacity = hovering ? "0.9" : "0.55";
+      const vx = ringX.getVelocity();
+      const vy = ringY.getVelocity();
+      const speed = Math.hypot(vx, vy);
+      stretch.set(Math.min(speed / 3400, 1));
+      if (speed > 40) {
+        let a = (Math.atan2(vy, vx) * 180) / Math.PI;
+        a = (((a + 90) % 180) + 180) % 180 - 90; // constrain to (-90, 90] (ellipse symmetry)
+        rot.set(a);
       }
       raf = requestAnimationFrame(loop);
     };
@@ -60,12 +77,24 @@ export default function SmoothCursor() {
       window.removeEventListener("mouseup", onUp);
       document.body.classList.remove("has-custom-cursor");
     };
-  }, []);
+  }, [x, y, s, ringX, ringY, rot, stretch]);
+
+  if (!enabled) return null;
 
   return (
     <>
-      <div ref={ringRef} className="cursor-ring" aria-hidden="true" />
-      <div ref={dotRef} className="cursor-dot" aria-hidden="true" />
+      {/* soft trailing ring with squash-stretch */}
+      <motion.div
+        className="cursor-ring"
+        aria-hidden="true"
+        style={{ x: ringX, y: ringY, scale: ringScale, rotate: rotS, scaleX, scaleY }}
+      />
+      {/* slow-spinning accent arc (position only; spin handled in CSS child) */}
+      <motion.div className="cursor-arc-wrap" aria-hidden="true" style={{ x: ringX, y: ringY }}>
+        <div className="cursor-arc" />
+      </motion.div>
+      {/* responsive dot */}
+      <motion.div className="cursor-dot" aria-hidden="true" style={{ x: dotX, y: dotY }} />
     </>
   );
 }

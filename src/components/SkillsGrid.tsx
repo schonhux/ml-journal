@@ -41,6 +41,7 @@ import {
 import { FaJava } from "react-icons/fa";
 import { VscAzure, VscTerminalPowershell } from "react-icons/vsc";
 import { TbSql } from "react-icons/tb";
+import { motion } from "framer-motion";
 
 type SkillGroup =
   | "Languages"
@@ -143,45 +144,55 @@ export default function SkillsGrid() {
           <div key={group}>
             <div className="mb-3 text-sm font-semibold text-white/80">{group}</div>
 
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4">
+            <div className="skill-grid grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4">
               {items.map(({ name, href, Icon, img, color }) => (
-                <a
+                <motion.a
                   key={name}
                   href={href}
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={name}
-                  className="group relative rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm transition
+                  whileHover={{ y: -6, scale: 1.07 }}
+                  whileTap={{ scale: 0.96 }}
+                  transition={{ type: "spring", stiffness: 320, damping: 18, mass: 0.5 }}
+                  className="group relative flex items-center justify-center rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm
                              hover:border-white/25 hover:bg-white/10"
+                  style={{ ["--tile" as string]: color ?? "#7D3CC9" }}
                 >
                   {/* Animated glow */}
                   <div
-                    className="pointer-events-none absolute inset-0 rounded-xl opacity-0 blur-xl transition duration-300 group-hover:opacity-100"
+                    className="pointer-events-none absolute inset-0 rounded-xl opacity-0 blur-xl transition-opacity duration-300 group-hover:opacity-100"
                     style={{
-                      background: `radial-gradient(60% 60% at 50% 40%, ${color ?? "#7D3CC9"} 0%, transparent 70%)`,
+                      background: `radial-gradient(60% 60% at 50% 40%, var(--tile) 0%, transparent 70%)`,
                     }}
                   />
+                  {/* accent ring on hover */}
+                  <div
+                    className="pointer-events-none absolute inset-0 rounded-xl opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                    style={{ boxShadow: `inset 0 0 0 1px var(--tile)` }}
+                  />
 
-                  {/* lift + brand color */}
-                  <div className="relative flex items-center justify-center transition duration-300 group-hover:-translate-y-0.5">
+                  {/* icon */}
+                  <motion.div
+                    className="relative flex items-center justify-center"
+                    whileHover={{ rotate: [0, -6, 6, 0] }}
+                    transition={{ duration: 0.5, ease: "easeInOut" }}
+                  >
                     {Icon ? (
-                      <Icon
-                        className="h-9 w-9 drop-shadow-sm transition duration-300"
-                        style={{ color }}
-                      />
+                      <Icon className="h-9 w-9 drop-shadow-sm" style={{ color }} />
                     ) : img ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={img} alt={name} className="h-9 w-9 drop-shadow-sm" />
                     ) : null}
-                  </div>
+                  </motion.div>
 
                   {/* tooltip */}
-                  <div className="pointer-events-none absolute -top-3 left-1/2 -translate-x-1/2 opacity-0 transition group-hover:opacity-100 z-10">
+                  <div className="pointer-events-none absolute -top-3 left-1/2 -translate-x-1/2 opacity-0 transition-opacity duration-200 group-hover:opacity-100 z-10">
                     <div className="whitespace-nowrap rounded-md border border-white/15 bg-black/80 px-2 py-1 text-[11px] text-white/90 backdrop-blur-sm">
                       {name}
                     </div>
                   </div>
-                </a>
+                </motion.a>
               ))}
             </div>
           </div>

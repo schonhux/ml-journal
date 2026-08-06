@@ -78,7 +78,7 @@ export default function DimensionHero({ active, onSelect, accent }: DimensionHer
                   aria-selected={isActive}
                   onClick={() => onSelect(t.id)}
                   className={[
-                    "relative flex items-center gap-2 rounded-xl px-4 py-2 text-sm transition-colors",
+                    "relative flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm transition-colors",
                     isActive ? "text-white" : "text-white/60 hover:text-white",
                   ].join(" ")}
                 >

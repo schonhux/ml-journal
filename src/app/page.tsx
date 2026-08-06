@@ -22,7 +22,7 @@ import SkillsGrid from "@/components/SkillsGrid";
 const TAB_ACCENTS: Record<string, string> = {
   intro: "#a78bfa",
   experience: "#22d3ee",
-  projects: "#fb923c",
+  projects: "#f87171",
   tech: "#4ade80",
   publications: "#f472b6",
 };
@@ -1820,18 +1820,18 @@ export default function Home() {
               key={tab}
               custom={dir}
               variants={{
-                enter: (d: number) => ({ opacity: 0, x: d * 44, filter: "blur(8px)" }),
+                enter: (d: number) => ({ opacity: 0, x: d * 30, scale: 0.99 }),
                 center: {
                   opacity: 1,
                   x: 0,
-                  filter: "blur(0px)",
-                  transition: { duration: 0.36, ease: [0.22, 1, 0.36, 1] },
+                  scale: 1,
+                  transition: { duration: 0.42, ease: [0.22, 1, 0.36, 1] },
                 },
                 exit: (d: number) => ({
                   opacity: 0,
-                  x: -d * 44,
-                  filter: "blur(8px)",
-                  transition: { duration: 0.24, ease: "easeIn" },
+                  x: -d * 22,
+                  scale: 0.99,
+                  transition: { duration: 0.26, ease: [0.4, 0, 0.2, 1] },
                 }),
               }}
               initial="enter"
@@ -2171,7 +2171,7 @@ export default function Home() {
 
                         <div className="mt-4 flex gap-3">
                           <span
-                            className="inline-block cursor-default rounded-md border border-white/20 px-3 py-1 text-sm font-medium text-white/40"
+                            className="inline-block cursor-default rounded-md border border-white/20 px-4 py-1.5 text-sm font-medium text-white/40"
                             title="Demo coming soon"
                           >
                             Demo
@@ -2180,7 +2180,7 @@ export default function Home() {
                             href="https://github.com/schonhux/MatVision"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-block rounded-md border border-white/50 px-3 py-1 text-sm font-medium hover:bg-white hover:text-black transition-colors"
+                            className="inline-block rounded-md border border-white/50 px-4 py-1.5 text-sm font-medium hover:bg-white hover:text-black transition-colors"
                           >
                             Repo
                           </a>
@@ -2216,7 +2216,7 @@ export default function Home() {
 
                         <div className="mt-4 flex gap-3">
                           <span
-                            className="inline-block cursor-default rounded-md border border-white/20 px-3 py-1 text-sm font-medium text-white/40"
+                            className="inline-block cursor-default rounded-md border border-white/20 px-4 py-1.5 text-sm font-medium text-white/40"
                             title="Demo coming soon"
                           >
                             Demo
@@ -2225,7 +2225,7 @@ export default function Home() {
                             href="https://github.com/schonhux/FaultLine"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-block rounded-md border border-white/50 px-3 py-1 text-sm font-medium hover:bg-white hover:text-black transition-colors"
+                            className="inline-block rounded-md border border-white/50 px-4 py-1.5 text-sm font-medium hover:bg-white hover:text-black transition-colors"
                           >
                             Repo
                           </a>
@@ -2266,7 +2266,7 @@ export default function Home() {
                             href="https://youtu.be/g5NZ6OFR-IE"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-block rounded-md border border-white/50 px-3 py-1 text-sm font-medium hover:bg-white hover:text-black transition-colors"
+                            className="inline-block rounded-md border border-white/50 px-4 py-1.5 text-sm font-medium hover:bg-white hover:text-black transition-colors"
                           >
                             Demo
                           </a>
@@ -2274,7 +2274,7 @@ export default function Home() {
                             href="https://github.com/schonhux/In-Play-Edge-Engine-"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-block rounded-md border border-white/50 px-3 py-1 text-sm font-medium hover:bg-white hover:text-black transition-colors"
+                            className="inline-block rounded-md border border-white/50 px-4 py-1.5 text-sm font-medium hover:bg-white hover:text-black transition-colors"
                           >
                             Repo
                           </a>
@@ -2316,7 +2316,7 @@ export default function Home() {
                             href="https://github.com/schonhux/InsiderEdge"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-block rounded-md border border-white/50 px-3 py-1 text-sm font-medium hover:bg-white hover:text-black transition-colors"
+                            className="inline-block rounded-md border border-white/50 px-4 py-1.5 text-sm font-medium hover:bg-white hover:text-black transition-colors"
                           >
                             Repo
                           </a>
@@ -2348,7 +2348,7 @@ export default function Home() {
                           href="https://github.com/schonhux/Flextasy"
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="mt-4 inline-block rounded-md border border-white/50 px-3 py-1 text-sm font-medium hover:bg-white hover:text-black transition-colors"
+                          className="mt-4 inline-block rounded-md border border-white/50 px-4 py-1.5 text-sm font-medium hover:bg-white hover:text-black transition-colors"
                         >
                           Repo
                         </a>
@@ -2379,7 +2379,7 @@ export default function Home() {
                           href="https://github.com/schonhux/The-Huddle"
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="mt-4 inline-block rounded-md border border-white/50 px-3 py-1 text-sm font-medium hover:bg-white hover:text-black transition-colors"
+                          className="mt-4 inline-block rounded-md border border-white/50 px-4 py-1.5 text-sm font-medium hover:bg-white hover:text-black transition-colors"
                         >
                           Repo
                         </a>
@@ -2413,7 +2413,7 @@ export default function Home() {
                             href="https://github.com/schonhux/NM-Landscaping-LLC-Website"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-block rounded-md border border-white/50 px-3 py-1 text-sm font-medium hover:bg-white hover:text-black transition-colors"
+                            className="inline-block rounded-md border border-white/50 px-4 py-1.5 text-sm font-medium hover:bg-white hover:text-black transition-colors"
                           >
                             Repo
                           </a>
@@ -2421,7 +2421,7 @@ export default function Home() {
                             href="https://nmlandscapingllc.com"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-block rounded-md border border-white/50 px-3 py-1 text-sm font-medium hover:bg-white hover:text-black transition-colors"
+                            className="inline-block rounded-md border border-white/50 px-4 py-1.5 text-sm font-medium hover:bg-white hover:text-black transition-colors"
                           >
                             Website
                           </a>
@@ -2453,7 +2453,7 @@ export default function Home() {
                           href="https://github.com/schonhux/MathMedic"
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="mt-4 inline-block rounded-md border border-white/50 px-3 py-1 text-sm font-medium hover:bg-white hover:text-black transition-colors"
+                          className="mt-4 inline-block rounded-md border border-white/50 px-4 py-1.5 text-sm font-medium hover:bg-white hover:text-black transition-colors"
                         >
                           Repo
                         </a>
@@ -2486,7 +2486,7 @@ export default function Home() {
                           href="https://github.com/schonhux/Tetris-"
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="mt-4 inline-block rounded-md border border-white/50 px-3 py-1 text-sm font-medium hover:bg-white hover:text-black transition-colors"
+                          className="mt-4 inline-block rounded-md border border-white/50 px-4 py-1.5 text-sm font-medium hover:bg-white hover:text-black transition-colors"
                         >
                           Repo
                         </a>
@@ -2515,7 +2515,7 @@ export default function Home() {
                           href="https://github.com/schonhux/ml-journal"
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="mt-4 inline-block rounded-md border border-white/50 px-3 py-1 text-sm font-medium hover:bg-white hover:text-black transition-colors"
+                          className="mt-4 inline-block rounded-md border border-white/50 px-4 py-1.5 text-sm font-medium hover:bg-white hover:text-black transition-colors"
                         >
                           Repo
                         </a>
