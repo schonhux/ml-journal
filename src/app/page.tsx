@@ -14,8 +14,18 @@ import Image from "next/image";
 import DimensionHero from "@/components/DimensionHero";
 import FixedBg from "@/components/FixedBg";
 import ParticleField from "@/components/ParticleField";
+import Aurora from "@/components/Aurora";
+import SmoothCursor from "@/components/SmoothCursor";
 import SocialLinks from "@/components/SocialLinks";
 import SkillsGrid from "@/components/SkillsGrid";
+
+const TAB_ACCENTS: Record<string, string> = {
+  intro: "#a78bfa",
+  experience: "#22d3ee",
+  projects: "#fb923c",
+  tech: "#4ade80",
+  publications: "#f472b6",
+};
 
 type Tab = "intro" | "experience" | "projects" | "tech" | "publications";
 
@@ -42,21 +52,60 @@ function ProjectCard({
   className?: string;
   accent?: string;
 }) {
+  const ref = React.useRef<HTMLDivElement>(null);
+  const rx = useMotionValue(0);
+  const ry = useMotionValue(0);
+  const srx = useSpring(rx, { stiffness: 150, damping: 16, mass: 0.3 });
+  const sry = useSpring(ry, { stiffness: 150, damping: 16, mass: 0.3 });
+
+  const onMove = (e: React.MouseEvent) => {
+    const el = ref.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    const px = (e.clientX - r.left) / r.width;
+    const py = (e.clientY - r.top) / r.height;
+    el.style.setProperty("--mx", `${px * 100}%`);
+    el.style.setProperty("--my", `${py * 100}%`);
+    rx.set((0.5 - py) * 6);
+    ry.set((px - 0.5) * 6);
+  };
+  const onLeave = () => {
+    rx.set(0);
+    ry.set(0);
+  };
+
   return (
     <motion.div
+      ref={ref}
       variants={staggerItem}
-      whileHover={{ y: -6, scale: 1.01 }}
+      onMouseMove={onMove}
+      onMouseLeave={onLeave}
+      whileHover={{ y: -6 }}
       transition={{ type: "spring", stiffness: 260, damping: 22 }}
-      style={{ ["--accent" as string]: accent }}
+      style={{
+        ["--accent" as string]: accent,
+        rotateX: srx,
+        rotateY: sry,
+        transformPerspective: 900,
+      }}
       className={[
         "group rounded-lg border border-white/10 bg-white/5 p-4",
         "shadow-[0_0_0_1px_rgba(255,255,255,0.02)_inset]",
         "hover:border-white/25 hover:bg-white/[0.06]",
-        "hover:shadow-[0_10px_30px_rgba(0,0,0,0.35)]",
+        "hover:shadow-[0_14px_40px_rgba(0,0,0,0.4)]",
         "flex flex-col justify-between relative overflow-hidden",
         className,
       ].join(" ")}
     >
+      {/* cursor-follow spotlight */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-70"
+        style={{
+          background:
+            "radial-gradient(200px circle at var(--mx, 50%) var(--my, 50%), var(--accent), transparent 45%)",
+          mixBlendMode: "soft-light",
+        }}
+      />
       {/* accent glow bleeding from the top-right on hover */}
       <div
         className="pointer-events-none absolute -top-16 -right-16 h-40 w-40 rounded-full opacity-0 blur-2xl transition-opacity duration-500 group-hover:opacity-25"
@@ -69,7 +118,9 @@ function ProjectCard({
           style={{ background: "linear-gradient(to right, transparent, var(--accent), transparent)" }}
         />
       </div>
-      {children}
+      <div className="relative" style={{ transform: "translateZ(20px)" }}>
+        {children}
+      </div>
     </motion.div>
   );
 }
@@ -1707,15 +1758,21 @@ export default function Home() {
     []
   );
 
+  const accent = TAB_ACCENTS[tab] ?? "#a78bfa";
+  const [dir, setDir] = useState(1);
+
   /* select tab + keep URL hash shareable */
   const selectTab = React.useCallback(
     (id: Tab) => {
-      setTab(id);
+      setTab((prev) => {
+        setDir(TAB_IDS.indexOf(id) >= TAB_IDS.indexOf(prev) ? 1 : -1);
+        return id;
+      });
       if (typeof window !== "undefined") {
         window.history.pushState(null, "", `#${id}`);
       }
     },
-    []
+    [TAB_IDS]
   );
 
   /* sync from hash on load / back / forward */
@@ -1748,21 +1805,38 @@ export default function Home() {
   }, [tab, TAB_IDS, selectTab]);
 
   return (
-    <>
+    <div className="accent-root" style={{ ["--accent" as string]: accent }}>
+      <SmoothCursor />
       <FixedBg />
+      <Aurora />
       <ParticleField />
 
-      <DimensionHero active={tab} onSelect={selectTab} />
+      <DimensionHero active={tab} onSelect={selectTab} accent={accent} />
 
       <section className="relative z-10 text-white -mt-6 md:-mt-10">
         <div className="mx-auto max-w-4xl px-5 py-10 md:py-12">
-          <AnimatePresence mode="wait">
+          <AnimatePresence mode="wait" custom={dir}>
             <motion.div
               key={tab}
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+              custom={dir}
+              variants={{
+                enter: (d: number) => ({ opacity: 0, x: d * 44, filter: "blur(8px)" }),
+                center: {
+                  opacity: 1,
+                  x: 0,
+                  filter: "blur(0px)",
+                  transition: { duration: 0.36, ease: [0.22, 1, 0.36, 1] },
+                },
+                exit: (d: number) => ({
+                  opacity: 0,
+                  x: -d * 44,
+                  filter: "blur(8px)",
+                  transition: { duration: 0.24, ease: "easeIn" },
+                }),
+              }}
+              initial="enter"
+              animate="center"
+              exit="exit"
             >
               <div className="rounded-xl border border-white/15 bg-black/45 backdrop-blur-sm p-6 md:p-8">
                 {/* INTRO TAB */}
@@ -2518,6 +2592,6 @@ export default function Home() {
       </section>
 
       <SocialLinks />
-    </>
+    </div>
   );
 }
