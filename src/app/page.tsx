@@ -1282,6 +1282,268 @@ function HuddleThread({ hovered }: { hovered: boolean }) {
   );
 }
 
+function FaultLineScene({ hovered }: { hovered: boolean }) {
+  const nodes = useMemo(
+    () => [
+      { key: "metrics", label: "Metrics" },
+      { key: "logs", label: "Logs" },
+      { key: "traces", label: "Traces" },
+    ],
+    []
+  );
+
+  // step: 0 idle, 1 paged, 2 investigating, 3 root cause, 4 pending approval
+  const [step, setStep] = React.useState(0);
+
+  React.useEffect(() => {
+    if (!hovered) {
+      setStep(0);
+      return;
+    }
+    const timers = [
+      window.setTimeout(() => setStep(1), 120),
+      window.setTimeout(() => setStep(2), 620),
+      window.setTimeout(() => setStep(3), 1500),
+      window.setTimeout(() => setStep(4), 2050),
+    ];
+    return () => timers.forEach((t) => window.clearTimeout(t));
+  }, [hovered]);
+
+  return (
+    <div className="mt-3 rounded-md border border-rose-200/15 bg-rose-950/15 p-3 relative overflow-hidden">
+      <motion.div
+        className="pointer-events-none absolute -inset-10 bg-gradient-to-br from-rose-400/15 via-transparent to-transparent blur-2xl"
+        initial={false}
+        animate={{ opacity: hovered ? 0.5 : 0.18, scale: hovered ? 1.03 : 1 }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
+      />
+
+      <div className="relative flex items-start justify-between gap-3">
+        <div>
+          <div className="text-xs text-white/70">FaultLine</div>
+          <div className="mt-0.5 text-[11px] text-white/55">incident arena</div>
+        </div>
+
+        <motion.div
+          initial={false}
+          animate={{
+            opacity: step >= 1 ? 1 : 0.55,
+            borderColor:
+              step >= 1 ? "rgba(251,113,133,0.6)" : "rgba(255,255,255,0.15)",
+          }}
+          className="flex items-center gap-1.5 rounded-full border bg-black/40 px-2 py-0.5 text-[10px] text-rose-100/90"
+        >
+          <motion.span
+            className="h-1.5 w-1.5 rounded-full bg-rose-400"
+            animate={{ opacity: step >= 1 && step < 3 ? [1, 0.3, 1] : 1 }}
+            transition={{ duration: 0.7, repeat: step >= 1 && step < 3 ? Infinity : 0 }}
+          />
+          PAGED
+        </motion.div>
+      </div>
+
+      {/* alert line */}
+      <div className="relative mt-2 rounded-md border border-white/10 bg-black/40 px-2.5 py-1.5">
+        <div className="flex items-center justify-between text-[10px]">
+          <span className="text-white/55 tabular-nums">
+            ALERT · db-pool-exhaustion
+          </span>
+          <motion.span
+            initial={false}
+            animate={{ opacity: step >= 1 ? 1 : 0.3 }}
+            className="text-rose-200/80"
+          >
+            firing
+          </motion.span>
+        </div>
+      </div>
+
+      {/* tool nodes */}
+      <div className="relative mt-2 grid grid-cols-3 gap-2">
+        {nodes.map((n, i) => {
+          const scanning = step === 2;
+          return (
+            <motion.div
+              key={n.key}
+              initial={false}
+              animate={{
+                borderColor: scanning
+                  ? "rgba(255,255,255,0.35)"
+                  : "rgba(255,255,255,0.1)",
+                opacity: scanning ? [0.5, 1, 0.5] : step >= 3 ? 0.5 : 0.8,
+              }}
+              transition={{
+                duration: 0.6,
+                repeat: scanning ? Infinity : 0,
+                delay: scanning ? i * 0.18 : 0,
+              }}
+              className="rounded-md border bg-white/[0.04] px-2 py-1.5 text-center text-[10px] text-white/70"
+            >
+              {n.label}
+            </motion.div>
+          );
+        })}
+      </div>
+
+      {/* root cause */}
+      <motion.div
+        initial={false}
+        animate={{
+          opacity: step >= 3 ? 1 : 0,
+          y: step >= 3 ? 0 : 6,
+        }}
+        transition={{ duration: 0.28, ease: "easeOut" }}
+        className="relative mt-2 rounded-md border border-amber-200/30 bg-amber-300/10 px-2.5 py-1.5"
+      >
+        <div className="flex items-center justify-between text-[10px]">
+          <span className="text-amber-100/90">root cause · connection pool</span>
+          <span className="text-white/50">evidence ✓</span>
+        </div>
+      </motion.div>
+
+      {/* footer */}
+      <div className="relative mt-2 min-h-[16px] text-[11px] text-white/60 flex items-center justify-between">
+        <span className="text-white/55">agent diagnosing</span>
+        <motion.span
+          initial={false}
+          animate={{ opacity: step >= 4 ? 1 : 0, y: step >= 4 ? 0 : 6 }}
+          transition={{ duration: 0.2 }}
+          className="rounded-full border border-white/15 bg-black/40 px-2 py-0.5 text-[10px] text-white/75"
+        >
+          fix · pending approval
+        </motion.span>
+      </div>
+    </div>
+  );
+}
+
+function MatVisionScene({ hovered }: { hovered: boolean }) {
+  const events = useMemo(
+    () => [
+      { t: 26, label: "Shot" },
+      { t: 52, label: "TD" },
+      { t: 78, label: "Esc" },
+    ],
+    []
+  );
+
+  const [takedowns, setTakedowns] = React.useState(0);
+  const [shown, setShown] = React.useState(0);
+
+  React.useEffect(() => {
+    if (!hovered) {
+      setTakedowns(0);
+      setShown(0);
+      return;
+    }
+    const timers = [
+      window.setTimeout(() => setShown(1), 400),
+      window.setTimeout(() => setShown(2), 900),
+      window.setTimeout(() => {
+        setShown(3);
+        setTakedowns(1);
+      }, 1400),
+    ];
+    return () => timers.forEach((t) => window.clearTimeout(t));
+  }, [hovered]);
+
+  return (
+    <div className="mt-3 rounded-md border border-orange-200/15 bg-orange-950/10 p-3 relative overflow-hidden">
+      <motion.div
+        className="pointer-events-none absolute -inset-10 bg-gradient-to-br from-orange-400/15 via-transparent to-transparent blur-2xl"
+        initial={false}
+        animate={{ opacity: hovered ? 0.5 : 0.18, scale: hovered ? 1.03 : 1 }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
+      />
+
+      <div className="relative flex items-start justify-between gap-3">
+        <div>
+          <div className="text-xs text-white/70">MatVision</div>
+          <div className="mt-0.5 text-[11px] text-white/55">film breakdown</div>
+        </div>
+        <div className="rounded-full border border-white/15 bg-black/40 px-2 py-0.5 text-[10px] text-white/70">
+          CV + pose
+        </div>
+      </div>
+
+      {/* mat / tracking view */}
+      <div className="relative mt-2 rounded-md border border-white/10 bg-black/40 overflow-hidden">
+        <svg viewBox="0 0 260 96" className="block w-full h-[90px]">
+          {/* mat rings */}
+          <circle cx="130" cy="48" r="40" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="1.5" />
+          <circle cx="130" cy="48" r="22" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="1.5" />
+
+          {/* wrestler A tracked box + skeleton */}
+          <motion.g
+            initial={false}
+            animate={{ x: hovered ? [0, 10, 4] : 0, y: hovered ? [0, -4, 2] : 0 }}
+            transition={{ duration: 2, repeat: hovered ? Infinity : 0, repeatType: "mirror" }}
+          >
+            <rect x="96" y="34" width="26" height="34" rx="3" fill="none" stroke="rgba(129,212,250,0.7)" strokeWidth="1.4" />
+            <circle cx="109" cy="40" r="3" fill="rgba(129,212,250,0.9)" />
+            <line x1="109" y1="43" x2="109" y2="56" stroke="rgba(129,212,250,0.8)" strokeWidth="1.4" />
+            <line x1="109" y1="47" x2="102" y2="53" stroke="rgba(129,212,250,0.8)" strokeWidth="1.4" />
+            <line x1="109" y1="47" x2="117" y2="52" stroke="rgba(129,212,250,0.8)" strokeWidth="1.4" />
+            <line x1="109" y1="56" x2="104" y2="65" stroke="rgba(129,212,250,0.8)" strokeWidth="1.4" />
+            <line x1="109" y1="56" x2="115" y2="65" stroke="rgba(129,212,250,0.8)" strokeWidth="1.4" />
+          </motion.g>
+
+          {/* wrestler B tracked box + skeleton */}
+          <motion.g
+            initial={false}
+            animate={{ x: hovered ? [0, -8, -3] : 0, y: hovered ? [0, 3, -2] : 0 }}
+            transition={{ duration: 2, repeat: hovered ? Infinity : 0, repeatType: "mirror" }}
+          >
+            <rect x="140" y="36" width="26" height="34" rx="3" fill="none" stroke="rgba(251,146,60,0.7)" strokeWidth="1.4" />
+            <circle cx="153" cy="42" r="3" fill="rgba(251,146,60,0.9)" />
+            <line x1="153" y1="45" x2="153" y2="58" stroke="rgba(251,146,60,0.8)" strokeWidth="1.4" />
+            <line x1="153" y1="49" x2="146" y2="54" stroke="rgba(251,146,60,0.8)" strokeWidth="1.4" />
+            <line x1="153" y1="49" x2="161" y2="55" stroke="rgba(251,146,60,0.8)" strokeWidth="1.4" />
+            <line x1="153" y1="58" x2="148" y2="66" stroke="rgba(251,146,60,0.8)" strokeWidth="1.4" />
+            <line x1="153" y1="58" x2="159" y2="66" stroke="rgba(251,146,60,0.8)" strokeWidth="1.4" />
+          </motion.g>
+        </svg>
+      </div>
+
+      {/* timeline with events */}
+      <div className="relative mt-2">
+        <div className="relative h-1.5 rounded-full bg-white/10">
+          <motion.div
+            className="absolute inset-y-0 left-0 rounded-full bg-orange-300/60"
+            initial={false}
+            animate={{ width: hovered ? "100%" : "0%" }}
+            transition={{ duration: 1.6, ease: "linear" }}
+          />
+          {events.map((e, i) => (
+            <motion.span
+              key={e.label}
+              className="absolute -top-1 h-3.5 w-3.5 -translate-x-1/2 rounded-full border border-orange-200/40 bg-black/70 text-[7px] leading-[13px] text-center text-orange-100/90"
+              style={{ left: `${e.t}%` }}
+              initial={false}
+              animate={{ opacity: shown > i ? 1 : 0, scale: shown > i ? 1 : 0.5 }}
+              transition={{ duration: 0.2 }}
+            >
+              •
+            </motion.span>
+          ))}
+        </div>
+      </div>
+
+      <div className="relative mt-2 min-h-[16px] text-[11px] text-white/60 flex items-center justify-between">
+        <span className="text-white/55">evidence-grounded</span>
+        <motion.span
+          initial={false}
+          animate={{ opacity: hovered ? 1 : 0, y: hovered ? 0 : 6 }}
+          transition={{ duration: 0.16 }}
+          className="text-white/75 tabular-nums"
+        >
+          takedowns: {takedowns}
+        </motion.span>
+      </div>
+    </div>
+  );
+}
+
 export default function Home() {
   const [tab, setTab] = useState<Tab>("intro");
   const [sportsHovered, setSportsHovered] = useState(false);
@@ -1291,6 +1553,8 @@ export default function Home() {
   const [tetrisHovered, setTetrisHovered] = useState(false);
   const [flexHovered, setFlexHovered] = useState(false);
   const [huddleHovered, setHuddleHovered] = useState(false);
+  const [faultHovered, setFaultHovered] = useState(false);
+  const [matHovered, setMatHovered] = useState(false);
   const TAB_IDS = React.useMemo<Tab[]>(
     () => ["intro", "experience", "projects", "tech", "publications"],
     []
@@ -1389,8 +1653,8 @@ export default function Home() {
                     {/* current position */}
                     <div className="mt-7 flex justify-center not-prose">
                       <span className="inline-flex items-center gap-2 rounded-full border border-red-400/35 bg-red-400/10 px-4 py-1.5 text-sm text-red-100/90">
-                        <span className="h-2 w-2 rounded-full bg-red-400 animate-pulse" />
-                        Now: AI Reliability &amp; DevOps Intern @ Lenovo | Qira AI Platform
+                        <span className="h-2 w-2 rounded-full bg-red-400" />
+                        Recently: AI Reliability &amp; DevOps Intern @ Lenovo | Qira AI Platform
                       </span>
                     </div>
 
@@ -1465,8 +1729,7 @@ export default function Home() {
 
           <div className="flex flex-col items-end gap-1.5">
             <span className="inline-flex items-center gap-1.5 rounded-full border border-red-400/40 bg-red-400/10 px-2.5 py-0.5 text-[11px] font-medium text-red-200">
-              <span className="h-1.5 w-1.5 rounded-full bg-red-400 animate-pulse" />
-              Current
+              Internship
             </span>
             <span className="text-xs text-white/50 tabular-nums">
               May 2026 – July 2026
@@ -1475,8 +1738,44 @@ export default function Home() {
         </div>
 
         <ul className="mt-4 list-disc pl-5 text-sm text-white/85 space-y-2">
-          <li>Working on Qira.</li>
+          <li>
+            Built 5 production quality signals in Rust for the AI runtime (retry storms, clarification rate, tool-call depth, loop latency, and task success), giving the SRE team its first real view into how the agent was behaving instead of just whether the service was up.
+          </li>
+          <li>
+            Instrumented the cloud-to-local model fallback path across iOS, Android, and Windows, cutting the time to catch a cloud provider outage from about 10 minutes to under 2 with a clean reason label and Prometheus alerts.
+          </li>
+          <li>
+            Built a thread-safe OpenTelemetry hot-reload system in Rust backed by Azure App Configuration, taking a collector endpoint change from a multi-day release down to under 60 seconds with no new deploy.
+          </li>
+          <li>
+            Owned reliability across 6 AI experiences and 3 partner integrations, driving 23 instrumentation requirements into production and helping cut a core workflow’s P95 latency by about 65%.
+          </li>
+          <li>
+            Found that a flagship AI feature’s main trigger path was emitting no telemetry at all, then took it from 0% to 100% span coverage after realizing every prior report had only measured internal test traffic.
+          </li>
+          <li>
+            Stood up the platform’s first external uptime monitoring with Azure Functions, delivering sub-2-minute P1 paging from multiple regions.
+          </li>
+          <li>
+            Built a multi-region Grafana dashboard that broke a 7-stage AI pipeline into its parts, tracing a 26-day latency spike to the server-side graph inference layer and ruling out the model itself.
+          </li>
+          <li>
+            Investigated and helped fix 8 defects in the Expedia integration, shipping 6 fixes and 3 alerts and proving the slowdown was on the partner side, which cut flight-search P95 from 17.1s to 8.3s.
+          </li>
         </ul>
+
+        <div className="chip-row mt-4 flex flex-wrap gap-1.5">
+          {["Rust", "OpenTelemetry", "Prometheus", "Grafana", "Azure", "Agentic AI", "SRE"].map(
+            (t) => (
+              <span
+                key={t}
+                className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[11px] text-white/70"
+              >
+                {t}
+              </span>
+            )
+          )}
+        </div>
       </motion.li>
 
       {/* BERKLEY */}
@@ -1508,7 +1807,7 @@ export default function Home() {
 
           <ul className="mt-3 list-disc pl-5 text-sm text-white/85 space-y-2">
             <li>
-              Designed and implemented an SRE-style Reliability Discovery Hub for a legacy multi-tenant insurance platform spanning 5+ environments and 25+ service dependencies, translating business-critical workflows into measurable SLIs and service boundaries.
+              Designed an SRE-style reliability framework for a legacy multi-tenant insurance platform spanning 5+ environments and 25+ service dependencies, translating Tier-0 application flows into measurable SLIs and helping reduce mean time to resolution by 20% through dependency-aware triage.
             </li>
             <li>
               Mapped end-to-end business journeys to Tier-0 infrastructure and application dependencies (Kong, IBM Liberty, Db2, ACE), enabling dependency-aware monitoring and faster incident triage.
@@ -1622,6 +1921,96 @@ export default function Home() {
                       animate="animate"
                       className="mt-6 grid gap-5 md:grid-cols-2"
                     >
+                      {/* MatVision */}
+                      <ProjectCard>
+                        <div
+                          onMouseEnter={() => setMatHovered(true)}
+                          onMouseLeave={() => setMatHovered(false)}
+                        >
+                          <div className="font-medium">
+                            MatVision | AI Wrestling Film Intelligence
+                          </div>
+                          <div className="text-sm text-white/70">
+                            Python, PyTorch, OpenCV, FastAPI, Next.js
+                          </div>
+
+                          <ul className="mt-2 list-disc pl-5 text-sm text-white/85 space-y-1">
+                            <li>
+                              Athlete tracking, pose estimation, and temporal event
+                              detection turn match film into stats and auto-clips.
+                            </li>
+                            <li>
+                              Every coaching note links to a timestamp; the model only
+                              explains facts the CV pipeline already verified.
+                            </li>
+                          </ul>
+
+                          <MatVisionScene hovered={matHovered} />
+                        </div>
+
+                        <div className="mt-4 flex gap-3">
+                          <span
+                            className="inline-block cursor-default rounded-md border border-white/20 px-3 py-1 text-sm font-medium text-white/40"
+                            title="Demo coming soon"
+                          >
+                            Demo
+                          </span>
+                          <a
+                            href="https://github.com/schonhux/MatVision"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-block rounded-md border border-white/50 px-3 py-1 text-sm font-medium hover:bg-white hover:text-black transition-colors"
+                          >
+                            Repo
+                          </a>
+                        </div>
+                      </ProjectCard>
+
+                      {/* FaultLine */}
+                      <ProjectCard>
+                        <div
+                          onMouseEnter={() => setFaultHovered(true)}
+                          onMouseLeave={() => setFaultHovered(false)}
+                        >
+                          <div className="font-medium">
+                            FaultLine | AI Incident-Response Arena
+                          </div>
+                          <div className="text-sm text-white/70">
+                            Rust, Python, LangGraph, MCP, OpenTelemetry
+                          </div>
+
+                          <ul className="mt-2 list-disc pl-5 text-sm text-white/85 space-y-1">
+                            <li>
+                              Injects real production outages into a live app, then
+                              scores how an AI agent diagnoses them against ground truth.
+                            </li>
+                            <li>
+                              Read-only telemetry tools via MCP; every fix blocks on
+                              human approval before running.
+                            </li>
+                          </ul>
+
+                          <FaultLineScene hovered={faultHovered} />
+                        </div>
+
+                        <div className="mt-4 flex gap-3">
+                          <span
+                            className="inline-block cursor-default rounded-md border border-white/20 px-3 py-1 text-sm font-medium text-white/40"
+                            title="Demo coming soon"
+                          >
+                            Demo
+                          </span>
+                          <a
+                            href="https://github.com/schonhux/FaultLine"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-block rounded-md border border-white/50 px-3 py-1 text-sm font-medium hover:bg-white hover:text-black transition-colors"
+                          >
+                            Repo
+                          </a>
+                        </div>
+                      </ProjectCard>
+
                       {/* Sports Betting Engine */}
                       <ProjectCard>
                         <div
@@ -1713,49 +2102,6 @@ export default function Home() {
                         </div>
                       </ProjectCard>
 
-                      {/* N&M Landscaping */}
-                      <ProjectCard>
-                        <div
-                          onMouseEnter={() => setLandHovered(true)}
-                          onMouseLeave={() => setLandHovered(false)}
-                        >
-                          <div className="font-medium">
-                            N&amp;M Landscaping Website
-                          </div>
-                          <div className="text-sm text-white/70">
-                            React/TypeScript, Supabase, Tailwind
-                          </div>
-                          <ul className="mt-2 list-disc pl-5 text-sm text-white/85 space-y-1">
-                            <li>Booking + admin dashboard with Supabase.</li>
-                            <li>Increased clientele by 40%.</li>
-                          </ul>
-
-                          <LawnMowerJumbotron
-                            hovered={landHovered}
-                            href="https://nmlandscapingllc.com/"
-                          />
-                        </div>
-
-                        <div className="mt-4 flex gap-3">
-                          <a
-                            href="https://github.com/schonhux/NM-Landscaping-LLC-Website"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-block rounded-md border border-white/50 px-3 py-1 text-sm font-medium hover:bg-white hover:text-black transition-colors"
-                          >
-                            Repo
-                          </a>
-                          <a
-                            href="https://nmlandscapingllc.com"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-block rounded-md border border-white/50 px-3 py-1 text-sm font-medium hover:bg-white hover:text-black transition-colors"
-                          >
-                            Website
-                          </a>
-                        </div>
-                      </ProjectCard>
-
                       {/* Flextasy */}
                       <ProjectCard>
                         <div
@@ -1816,6 +2162,49 @@ export default function Home() {
                         >
                           Repo
                         </a>
+                      </ProjectCard>
+
+                      {/* N&M Landscaping */}
+                      <ProjectCard>
+                        <div
+                          onMouseEnter={() => setLandHovered(true)}
+                          onMouseLeave={() => setLandHovered(false)}
+                        >
+                          <div className="font-medium">
+                            N&amp;M Landscaping Website
+                          </div>
+                          <div className="text-sm text-white/70">
+                            React/TypeScript, Supabase, Tailwind
+                          </div>
+                          <ul className="mt-2 list-disc pl-5 text-sm text-white/85 space-y-1">
+                            <li>Booking + admin dashboard with Supabase.</li>
+                            <li>Increased clientele by 40%.</li>
+                          </ul>
+
+                          <LawnMowerJumbotron
+                            hovered={landHovered}
+                            href="https://nmlandscapingllc.com/"
+                          />
+                        </div>
+
+                        <div className="mt-4 flex gap-3">
+                          <a
+                            href="https://github.com/schonhux/NM-Landscaping-LLC-Website"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-block rounded-md border border-white/50 px-3 py-1 text-sm font-medium hover:bg-white hover:text-black transition-colors"
+                          >
+                            Repo
+                          </a>
+                          <a
+                            href="https://nmlandscapingllc.com"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-block rounded-md border border-white/50 px-3 py-1 text-sm font-medium hover:bg-white hover:text-black transition-colors"
+                          >
+                            Website
+                          </a>
+                        </div>
                       </ProjectCard>
 
                       {/* MathMedic */}

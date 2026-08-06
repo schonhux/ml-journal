@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none">
+  <defs>
+    <linearGradient id="appdGrad" x1="6" y1="6" x2="42" y2="42" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#7D3CC9"/>
+      <stop offset="1" stop-color="#4B2A87"/>
+    </linearGradient>
+  </defs>
+  <path d="M24 6a18 18 0 1 0 12.7 30.7l-4.2-4.2A12 12 0 1 1 24 12a12 12 0 0 1 10.4 6l5.2-3A18 18 0 0 0 24 6Z" fill="url(#appdGrad)"/>
+  <circle cx="24" cy="24" r="5.4" fill="url(#appdGrad)"/>
+</svg>
