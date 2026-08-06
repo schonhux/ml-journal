@@ -36,26 +36,38 @@ const staggerItem = {
 function ProjectCard({
   children,
   className = "",
+  accent = "#ffffff",
 }: {
   children: React.ReactNode;
   className?: string;
+  accent?: string;
 }) {
   return (
     <motion.div
       variants={staggerItem}
       whileHover={{ y: -6, scale: 1.01 }}
       transition={{ type: "spring", stiffness: 260, damping: 22 }}
+      style={{ ["--accent" as string]: accent }}
       className={[
         "group rounded-lg border border-white/10 bg-white/5 p-4",
         "shadow-[0_0_0_1px_rgba(255,255,255,0.02)_inset]",
-        "hover:border-white/20 hover:bg-white/[0.06]",
+        "hover:border-white/25 hover:bg-white/[0.06]",
         "hover:shadow-[0_10px_30px_rgba(0,0,0,0.35)]",
         "flex flex-col justify-between relative overflow-hidden",
         className,
       ].join(" ")}
     >
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-16 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-        <div className="h-full w-full bg-gradient-to-b from-white/10 to-transparent" />
+      {/* accent glow bleeding from the top-right on hover */}
+      <div
+        className="pointer-events-none absolute -top-16 -right-16 h-40 w-40 rounded-full opacity-0 blur-2xl transition-opacity duration-500 group-hover:opacity-25"
+        style={{ background: "radial-gradient(circle, var(--accent) 0%, transparent 70%)" }}
+      />
+      {/* accent underline that wipes across the top on hover */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px overflow-hidden">
+        <div
+          className="h-full w-full origin-left -translate-x-full transition-transform duration-500 group-hover:translate-x-0"
+          style={{ background: "linear-gradient(to right, transparent, var(--accent), transparent)" }}
+        />
       </div>
       {children}
     </motion.div>
@@ -298,14 +310,6 @@ function InsiderEdgeSnapLine({ hovered }: { hovered: boolean }) {
       .join(" ");
   }, [pts]);
 
-  const fullLinePath = React.useMemo(() => {
-    return pts.map((p, i) => (i === 0 ? `M ${p.x} ${p.y}` : `L ${p.x} ${p.y}`)).join(" ");
-  }, [pts]);
-
-  const areaPath = React.useMemo(() => {
-    return `${fullLinePath} L ${w - padX} ${h - padY} L ${padX} ${h - padY} Z`;
-  }, [fullLinePath, w, h, padX, padY]);
-
   const clamp = (x: number, a: number, b: number) => Math.max(a, Math.min(b, x));
 
   const interpAtT = React.useCallback(
@@ -463,69 +467,131 @@ function InsiderEdgeSnapLine({ hovered }: { hovered: boolean }) {
 
         <svg width="100%" viewBox={`0 0 ${w} ${h}`} className="block">
           <defs>
-            <linearGradient id="areaFadeStocks" x1="0" x2="0" y1="0" y2="1">
-              <stop offset="0" stopColor="rgba(255,255,255,0.12)" />
-              <stop offset="1" stopColor="rgba(255,255,255,0.00)" />
+            <linearGradient id="areaPre" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0" stopColor="rgba(125,211,252,0.28)" />
+              <stop offset="1" stopColor="rgba(125,211,252,0.00)" />
             </linearGradient>
+            <linearGradient id="areaPost" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0" stopColor="rgba(248,113,113,0.30)" />
+              <stop offset="1" stopColor="rgba(248,113,113,0.00)" />
+            </linearGradient>
+            <filter id="dotGlow" x="-120%" y="-120%" width="340%" height="340%">
+              <feGaussianBlur stdDeviation="3.2" result="b" />
+              <feMerge>
+                <feMergeNode in="b" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
           </defs>
 
-          <g opacity="0.16">
+          {/* grid */}
+          <g opacity="0.12">
             {Array.from({ length: 5 }).map((_, i) => {
               const y = (i * h) / 4;
+              return <line key={`gh-${i}`} x1="0" x2={w} y1={y} y2={y} stroke="white" strokeWidth="0.6" />;
+            })}
+            {Array.from({ length: 6 }).map((_, i) => {
+              const x = padX + (i * (w - padX * 2)) / 5;
+              return <line key={`gv-${i}`} x1={x} x2={x} y1="0" y2={h - padY} stroke="white" strokeWidth="0.5" />;
+            })}
+          </g>
+
+          {/* volume bars */}
+          <g>
+            {pts.map((p, i) => {
+              if (i === 0) return null;
+              const up = p.v >= pts[i - 1].v;
+              const mag = Math.min(1, Math.abs(p.v - pts[i - 1].v) / 3);
+              const bh = 3 + mag * 12;
+              const past = i > snapIndex;
               return (
-                <line
-                  key={i}
-                  x1="0"
-                  x2={w}
-                  y1={y}
-                  y2={y}
-                  stroke="white"
-                  strokeWidth="0.7"
+                <rect
+                  key={`vol-${i}`}
+                  x={p.x - 1.4}
+                  y={h - padY - bh}
+                  width={2.8}
+                  height={bh}
+                  rx={0.8}
+                  fill={past ? "rgba(248,113,113,0.35)" : up ? "rgba(125,211,252,0.35)" : "rgba(148,163,184,0.28)"}
                 />
               );
             })}
           </g>
 
-          {/* area fill */}
-          <path d={areaPath} fill="url(#areaFadeStocks)" />
+          {/* area fills: pre (cyan) + post (red) */}
+          <path
+            d={`${prePath} L ${snapPt.x} ${h - padY} L ${padX} ${h - padY} Z`}
+            fill="url(#areaPre)"
+          />
+          <motion.path
+            d={`${postPath} L ${pts[n - 1].x} ${h - padY} L ${snapPt.x} ${h - padY} Z`}
+            fill="url(#areaPost)"
+            initial={false}
+            animate={{ opacity: hovered ? 1 : 0.35 }}
+            transition={{ duration: 0.3 }}
+          />
 
-          {/* pre-event line */}
+          {/* anomaly marker at the event */}
+          <line
+            x1={snapPt.x}
+            x2={snapPt.x}
+            y1={padY}
+            y2={h - padY}
+            stroke="rgba(251,191,36,0.5)"
+            strokeWidth="1"
+            strokeDasharray="3 3"
+          />
+          <motion.circle
+            cx={snapPt.x}
+            cy={snapPt.y}
+            r="4"
+            fill="none"
+            stroke="rgba(251,191,36,0.9)"
+            strokeWidth="1.4"
+            animate={{ r: hovered ? [4, 9, 4] : 4, opacity: hovered ? [0.9, 0, 0.9] : 0.7 }}
+            transition={{ duration: 1.4, repeat: hovered ? Infinity : 0, ease: "easeOut" }}
+          />
+          <circle cx={snapPt.x} cy={snapPt.y} r="2.4" fill="#fbbf24" />
+
+          {/* pre-event line (cyan) */}
           <motion.path
             d={prePath}
             fill="none"
-            stroke="white"
+            stroke="#7dd3fc"
             strokeWidth="2"
             strokeLinecap="round"
+            strokeLinejoin="round"
             initial={false}
-            animate={{ opacity: hovered ? 0.9 : 0.95 }}
-            transition={{ duration: 0.12 }}
+            animate={{ opacity: 0.95 }}
           />
 
-          {/* Crash Segment */}
+          {/* crash segment (red, draws in on hover) */}
           <AnimatePresence>
             {hovered && (
               <motion.path
                 d={postPath}
                 fill="none"
-                stroke="white"
+                stroke="#f87171"
                 strokeWidth="2"
                 strokeLinecap="round"
+                strokeLinejoin="round"
                 initial={{ pathLength: 0, opacity: 0.95 }}
                 animate={{ pathLength: 1, opacity: 1 }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: 0.34, ease: "easeOut" }}
+                transition={{ duration: 0.45, ease: "easeOut" }}
               />
             )}
           </AnimatePresence>
 
-
+          {/* scrubbing dot with glow */}
           <motion.circle
-            r="4.2"
-            fill="white"
+            r="4"
             cx={mvX}
             cy={mvY}
-            style={{ opacity: hovered ? 1 : 0.75 }}
+            filter="url(#dotGlow)"
+            style={{ fill: ui.t > snapIndex ? "#f87171" : "#7dd3fc", opacity: hovered ? 1 : 0.8 }}
           />
+          <motion.circle r="1.6" cx={mvX} cy={mvY} fill="#0a0d1a" style={{ opacity: hovered ? 1 : 0.8 }} />
         </svg>
 
 
@@ -555,20 +621,8 @@ function InsiderEdgeSnapLine({ hovered }: { hovered: boolean }) {
 }
 
 function LawnMowerJumbotron({ hovered, href }: { hovered: boolean; href: string }) {
-  const W = 520;
-  const H = 160;
-
-  const mowerX = hovered ? 360 : 120;
-  const mowWidth = hovered ? 330 : 40;
-
-  const mowerGroupBaseY = 92;
-  const deckCenterY = mowerGroupBaseY + 34;
-  const mowStripH = 46;
-  const mowStripY = Math.round(deckCenterY - mowStripH / 2);
-
-  const stripX = 160;
-
-  const BLEED = 18;
+  const guyFrom = 24;
+  const guyTo = 212;
 
   return (
     <a
@@ -584,262 +638,135 @@ function LawnMowerJumbotron({ hovered, href }: { hovered: boolean; href: string 
       <motion.div
         className="pointer-events-none absolute -inset-10 bg-gradient-to-br from-emerald-300/16 via-transparent to-transparent blur-2xl"
         initial={false}
-        animate={{ opacity: hovered ? 0.55 : 0.22, scale: hovered ? 1.03 : 1 }}
+        animate={{ opacity: hovered ? 0.5 : 0.22, scale: hovered ? 1.03 : 1 }}
         transition={{ duration: 0.4, ease: "easeOut" }}
       />
 
       <div className="relative flex items-center justify-between px-3 pt-3">
-        <div>
-          <div className="text-xs text-white/80">N&amp;M Landscaping LLC</div>
-          <div className="mt-0.5 text-[11px] text-white/55"></div>
-        </div>
-
+        <div className="text-xs text-white/80">N&amp;M Landscaping LLC</div>
         <div className="rounded-full border border-emerald-200/20 bg-black/30 px-2.5 py-1 text-[10px] text-white/70">
           Live Site
         </div>
       </div>
 
       <div className="relative px-3 pb-3 pt-2">
-        <div className="relative rounded-md border border-white/10 bg-black/25 overflow-hidden">
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-7 bg-gradient-to-b from-black/35 to-transparent z-[2]" />
-
-          <svg viewBox={`0 0 ${W} ${H}`} className="block h-[110px] w-full">
+        <div className="relative rounded-md border border-white/10 overflow-hidden">
+          <svg viewBox="0 0 260 120" className="block h-[112px] w-full" shapeRendering="crispEdges">
             <defs>
-              <linearGradient id="nmLawnAll_A2" x1="0" x2="0" y1="0" y2="1">
-                <stop offset="0" stopColor="rgba(16,185,129,0.42)" />
-                <stop offset="1" stopColor="rgba(16,185,129,0.16)" />
-              </linearGradient>
-
-      
-              <filter id="nmGrain_A2" x="-20%" y="-20%" width="140%" height="140%">
-                <feTurbulence
-                  type="fractalNoise"
-                  baseFrequency="0.85"
-                  numOctaves="2"
-                  stitchTiles="stitch"
-                  seed="2"
-                />
-                <feColorMatrix type="saturate" values="0" />
-                <feComponentTransfer>
-                  <feFuncA type="table" tableValues="0 0.10" />
-                </feComponentTransfer>
-              </filter>
-
-          
-              <pattern id="nmMowed_A2" width="10" height="10" patternUnits="userSpaceOnUse">
-                <rect width="10" height="10" fill="rgba(255,255,255,0)" />
-                <rect width="10" height="2" y="0" fill="rgba(255,255,255,0.05)" />
-                <rect width="10" height="2" y="5" fill="rgba(0,0,0,0.06)" />
-              </pattern>
-
-              <filter id="nmSoftShadow_A2" x="-30%" y="-30%" width="160%" height="160%">
-                <feDropShadow
-                  dx="0"
-                  dy="2"
-                  stdDeviation="2"
-                  floodColor="rgba(0,0,0,0.45)"
-                />
-              </filter>
-
-              <radialGradient id="nmVignette_A2" cx="55%" cy="40%" r="85%">
-                <stop offset="0" stopColor="rgba(255,255,255,0.05)" />
-                <stop offset="1" stopColor="rgba(0,0,0,0.22)" />
-              </radialGradient>
-
-              <linearGradient id="nmTopLift_A2" x1="0" x2="0" y1="0" y2="1">
-                <stop offset="0" stopColor="rgba(255,255,255,0.08)" />
-                <stop offset="1" stopColor="rgba(255,255,255,0.00)" />
+              <linearGradient id="nmSky" x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0" stopColor="#2a4a72" />
+                <stop offset="1" stopColor="#6f9fc0" />
               </linearGradient>
             </defs>
 
-            <rect
-              x={-BLEED}
-              y={-BLEED}
-              width={W + BLEED * 2}
-              height={H + BLEED * 2}
-              fill="url(#nmLawnAll_A2)"
-            />
-            <rect
-              x={-BLEED}
-              y={-BLEED}
-              width={W + BLEED * 2}
-              height={H + BLEED * 2}
-              filter="url(#nmGrain_A2)"
-              opacity={hovered ? 0.14 : 0.10}
-            />
+            {/* sky + ground */}
+            <rect x="0" y="0" width="260" height="82" fill="url(#nmSky)" />
+            <rect x="0" y="80" width="260" height="40" fill="#3f9455" />
+            <rect x="0" y="80" width="260" height="3" fill="#4fa863" />
 
-            <rect x={-BLEED} y={-BLEED} width={W + BLEED * 2} height={48} fill="url(#nmTopLift_A2)" opacity="0.55" />
-
-
-            <rect
-              x={-BLEED}
-              y={-BLEED}
-              width={W + BLEED * 2}
-              height={H + BLEED * 2}
-              fill="url(#nmVignette_A2)"
-              opacity="0.55"
-            />
-
-            <motion.rect
-              x={stripX}
-              y={mowStripY}
-              height={mowStripH}
-              rx="12"
-              fill="rgba(0,0,0,0.10)"
-              initial={false}
-              animate={{ width: mowWidth, opacity: hovered ? 0.85 : 0.35 }}
-              transition={{ duration: 1.35, ease: "easeInOut" }}
-            />
-            <motion.rect
-              x={stripX}
-              y={mowStripY}
-              height={mowStripH}
-              rx="12"
-              fill="url(#nmMowed_A2)"
-              initial={false}
-              animate={{ width: mowWidth, opacity: hovered ? 0.50 : 0.18 }}
-              transition={{ duration: 1.35, ease: "easeInOut" }}
-            />
-            <motion.rect
-              x={stripX}
-              y={mowStripY}
-              height={mowStripH}
-              rx="12"
-              fill="rgba(255,255,255,0.06)"
-              initial={false}
-              animate={{ width: mowWidth, opacity: hovered ? 0.18 : 0.08 }}
-              transition={{ duration: 1.35, ease: "easeInOut" }}
-            />
-
-
-            <g filter="url(#nmSoftShadow_A2)" transform="translate(22,22)">
-              <path
-                d="M 10 44 L 46 16 L 82 44 L 82 86 Q 82 94 74 94 L 18 94 Q 10 94 10 86 Z"
-                fill="rgba(255,255,255,0.08)"
-                stroke="rgba(255,255,255,0.92)"
-                strokeWidth="4.5"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M66 22 L66 6 L78 6 L78 30"
-                fill="none"
-                stroke="rgba(255,255,255,0.70)"
-                strokeWidth="3.5"
-                strokeLinecap="round"
-              />
-              <path
-                d="M 42 94 L 42 70 Q 42 64 48 64 L 52 64 Q 58 64 58 70 L 58 94"
-                fill="rgba(0,0,0,0.18)"
-                stroke="rgba(255,255,255,0.22)"
-                strokeWidth="2"
-                strokeLinejoin="round"
-              />
-              <circle cx="55" cy="80" r="1.7" fill="rgba(255,255,255,0.65)" />
-
-              <rect
-                x="20"
-                y="56"
-                width="16"
-                height="14"
-                rx="4"
-                fill="rgba(16,185,129,0.18)"
-                stroke="rgba(255,255,255,0.24)"
-                strokeWidth="1.6"
-              />
-              <rect
-                x="66"
-                y="56"
-                width="16"
-                height="14"
-                rx="4"
-                fill="rgba(16,185,129,0.18)"
-                stroke="rgba(255,255,255,0.24)"
-                strokeWidth="1.6"
-              />
-
-              {/* bushes */}
-              <g transform="translate(96,74)">
-                <circle cx="8" cy="10" r="9" fill="rgba(16,185,129,0.34)" />
-                <circle cx="18" cy="8" r="10" fill="rgba(16,185,129,0.28)" />
-                <circle cx="30" cy="10" r="9" fill="rgba(16,185,129,0.32)" />
-                <path
-                  d="M2 16 C10 10, 14 18, 22 14 C28 12, 34 18, 38 14"
-                  fill="none"
-                  stroke="rgba(255,255,255,0.10)"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                />
-              </g>
-            </g>
-
-       
+            {/* sun with gentle pulse */}
             <motion.g
               initial={false}
-              animate={{ x: mowerX }}
-              transition={{ duration: 1.35, ease: "easeInOut" }}
+              animate={{ scale: hovered ? [1, 1.08, 1] : 1, opacity: hovered ? 1 : 0.9 }}
+              transition={{ duration: 3, repeat: hovered ? Infinity : 0, ease: "easeInOut" }}
+              style={{ transformOrigin: "224px 24px" }}
             >
-              <g transform="translate(70,92)">
-                <path
-                  d="M18 38 L6 14"
-                  fill="none"
-                  stroke="rgba(255,255,255,0.72)"
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                />
-                <path
-                  d="M6 14 L26 14"
-                  fill="none"
-                  stroke="rgba(255,255,255,0.55)"
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                />
-                <path
-                  d="M26 14 L34 22"
-                  fill="none"
-                  stroke="rgba(255,255,255,0.42)"
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                />
+              {Array.from({ length: 8 }).map((_, i) => {
+                const a = (i * Math.PI) / 4;
+                return (
+                  <rect
+                    key={i}
+                    x={224 + Math.cos(a) * 15 - 1.5}
+                    y={24 + Math.sin(a) * 15 - 1.5}
+                    width="3"
+                    height="3"
+                    fill="#ffd45e"
+                  />
+                );
+              })}
+              <circle cx="224" cy="24" r="9" fill="#ffdf7a" />
+            </motion.g>
 
-                <path
-                  d="M18 26 C20 18, 34 14, 48 18 C58 21, 60 34, 54 40 C48 46, 26 46, 18 40 C14 36, 14 31, 18 26 Z"
-                  fill="rgba(255,255,255,0.14)"
-                  stroke="rgba(255,255,255,0.34)"
-                  strokeWidth="2"
-                />
+            {/* clouds */}
+            <g fill="#dbe9f2" opacity="0.9">
+              <rect x="150" y="20" width="22" height="5" rx="2" />
+              <rect x="156" y="16" width="12" height="5" rx="2" />
+              <rect x="96" y="34" width="18" height="4" rx="2" />
+            </g>
 
-                <rect
-                  x="33"
-                  y="18"
-                  width="15"
-                  height="10"
-                  rx="4"
-                  fill="rgba(255,255,255,0.10)"
-                  stroke="rgba(255,255,255,0.24)"
-                  strokeWidth="1.5"
-                />
+            {/* house */}
+            <g>
+              <rect x="26" y="50" width="52" height="30" fill="#e6d6ad" />
+              <rect x="26" y="50" width="52" height="30" fill="none" stroke="#00000022" strokeWidth="1" />
+              <polygon points="20,50 52,28 84,50" fill="#b5533f" />
+              <rect x="64" y="34" width="7" height="12" fill="#8a4636" />
+              <rect x="46" y="62" width="13" height="18" fill="#7a4a2e" />
+              <circle cx="56" cy="71" r="1" fill="#ffdf7a" />
+              <rect x="32" y="56" width="10" height="10" fill="#bfe3ff" />
+              <rect x="32" y="56" width="10" height="10" fill="none" stroke="#00000022" strokeWidth="1" />
+            </g>
 
-                <circle cx="26" cy="44" r="6.2" fill="rgba(255,255,255,0.86)" />
-                <circle cx="52" cy="44" r="6.2" fill="rgba(255,255,255,0.86)" />
-                <circle cx="26" cy="44" r="2.2" fill="rgba(0,0,0,0.25)" />
-                <circle cx="52" cy="44" r="2.2" fill="rgba(0,0,0,0.25)" />
+            {/* mowed lane that grows behind the mower */}
+            <motion.rect
+              x={guyFrom}
+              y="92"
+              height="14"
+              fill="#5cbb70"
+              initial={false}
+              animate={{ width: hovered ? guyTo - guyFrom + 20 : 0 }}
+              transition={{ duration: 2.4, ease: "easeInOut" }}
+            />
+            <motion.rect
+              x={guyFrom}
+              y="95"
+              height="2"
+              fill="#79cf8a"
+              initial={false}
+              animate={{ width: hovered ? guyTo - guyFrom + 20 : 0 }}
+              transition={{ duration: 2.4, ease: "easeInOut" }}
+            />
 
+            {/* the pixel mower + guy */}
+            <motion.g
+              initial={false}
+              animate={{ x: hovered ? guyTo : guyFrom }}
+              transition={{ duration: 2.4, ease: "easeInOut" }}
+            >
+              {/* walking bob */}
+              <motion.g
+                initial={false}
+                animate={{ y: hovered ? [0, -1.5, 0] : 0 }}
+                transition={{ duration: 0.42, repeat: hovered ? Infinity : 0, ease: "easeInOut" }}
+              >
+                {/* mower ahead */}
+                <rect x="12" y="94" width="16" height="8" fill="#c9ccd1" />
+                <rect x="12" y="94" width="16" height="2" fill="#e4e7ea" />
+                <line x1="26" y1="96" x2="14" y2="87" stroke="#9aa0a8" strokeWidth="2" strokeLinecap="round" />
+                <circle cx="16" cy="103" r="2.2" fill="#2b2f36" />
+                <circle cx="25" cy="103" r="2.2" fill="#2b2f36" />
+
+                {/* clippings puff */}
                 <motion.g
                   initial={false}
-                  animate={{ opacity: hovered ? 0.60 : 0 }}
-                  transition={{ duration: 0.22 }}
+                  animate={{ opacity: hovered ? [0.2, 0.7, 0.2] : 0 }}
+                  transition={{ duration: 0.6, repeat: hovered ? Infinity : 0 }}
                 >
-                  {Array.from({ length: 9 }).map((_, i) => (
-                    <circle
-                      key={i}
-                      cx={66 + i * 6}
-                      cy={34 + (i % 2) * 7}
-                      r="1.6"
-                      fill="rgba(16,185,129,0.9)"
-                    />
-                  ))}
+                  <rect x="29" y="96" width="2" height="2" fill="#8fe0a1" />
+                  <rect x="31" y="99" width="2" height="2" fill="#8fe0a1" />
+                  <rect x="30" y="93" width="2" height="2" fill="#8fe0a1" />
                 </motion.g>
-              </g>
+
+                {/* guy */}
+                <rect x="0" y="80" width="7" height="2" fill="#3a2a1e" />{/* cap brim */}
+                <rect x="1" y="78" width="6" height="3" fill="#e0524d" />{/* cap */}
+                <rect x="1" y="81" width="6" height="5" fill="#e8b98f" />{/* head */}
+                <rect x="-1" y="86" width="9" height="8" fill="#e0524d" />{/* shirt */}
+                <rect x="7" y="88" width="8" height="3" fill="#e8b98f" />{/* arm to handle */}
+                <rect x="0" y="94" width="3" height="8" fill="#35507a" />{/* leg */}
+                <rect x="4" y="94" width="3" height="8" fill="#2c4467" />{/* leg */}
+                <rect x="0" y="102" width="3" height="2" fill="#22201e" />
+                <rect x="4" y="102" width="3" height="2" fill="#22201e" />
+              </motion.g>
             </motion.g>
           </svg>
 
@@ -851,7 +778,7 @@ function LawnMowerJumbotron({ hovered, href }: { hovered: boolean; href: string 
               transition={{ duration: 0.2 }}
               className="text-white/75"
             >
-              mowing pass…
+              mowing…
             </motion.span>
           </div>
         </div>
@@ -1104,17 +1031,48 @@ function FlextasyPhone({ hovered }: { hovered: boolean }) {
   );
 
   const [reps, setReps] = React.useState(0);
+  const [revealed, setRevealed] = React.useState(0);
+  const [typing, setTyping] = React.useState(false);
 
   React.useEffect(() => {
     if (!hovered) {
       setReps(0);
+      setRevealed(0);
+      setTyping(false);
       return;
     }
-    const id = window.setInterval(() => {
-      setReps((r) => (r >= 12 ? 12 : r + 1));
-    }, 150);
-    return () => window.clearInterval(id);
-  }, [hovered]);
+    const timers: number[] = [];
+    // reveal each message after a short "typing" beat
+    messages.forEach((_, i) => {
+      const base = 200 + i * 700;
+      timers.push(window.setTimeout(() => setTyping(true), base));
+      timers.push(
+        window.setTimeout(() => {
+          setTyping(false);
+          setRevealed(i + 1);
+        }, base + 450)
+      );
+    });
+    // start rep counter once the convo lands
+    const repStart = 200 + messages.length * 700;
+    const id = window.setTimeout(() => {
+      const iv = window.setInterval(() => {
+        setReps((r) => {
+          if (r >= 12) {
+            window.clearInterval(iv);
+            return 12;
+          }
+          return r + 1;
+        });
+      }, 130);
+      timers.push(iv);
+    }, repStart);
+    timers.push(id);
+    return () => timers.forEach((t) => window.clearTimeout(t));
+  }, [hovered, messages]);
+
+  const R = 15;
+  const C = 2 * Math.PI * R;
 
   return (
     <div className="mt-3 rounded-md border border-white/15 bg-white/5 p-3 relative overflow-hidden">
@@ -1133,15 +1091,13 @@ function FlextasyPhone({ hovered }: { hovered: boolean }) {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <motion.div
-            initial={false}
-            animate={{ opacity: hovered ? 1 : 0.7 }}
-            className="rounded-full border border-white/15 bg-black/40 px-2 py-0.5 text-[10px] text-white/70"
-          >
-            WebSocket
-          </motion.div>
-        </div>
+        <motion.div
+          initial={false}
+          animate={{ opacity: hovered ? 1 : 0.7 }}
+          className="rounded-full border border-white/15 bg-black/40 px-2 py-0.5 text-[10px] text-white/70"
+        >
+          WebSocket
+        </motion.div>
       </div>
 
       {/* phone frame */}
@@ -1149,35 +1105,82 @@ function FlextasyPhone({ hovered }: { hovered: boolean }) {
         <div className="mx-auto mb-2 h-1 w-10 rounded-full bg-white/20" />
 
         {/* chat area */}
-        <div className="space-y-1.5 min-h-[92px]">
+        <div className="space-y-1.5 min-h-[96px]">
           {messages.map((m, i) => (
-            <motion.div
-              key={i}
-              initial={false}
-              animate={{
-                opacity: hovered ? 1 : i === 0 ? 0.75 : 0,
-                y: hovered ? 0 : 6,
-                scale: hovered ? 1 : 0.97,
-              }}
-              transition={{ duration: 0.24, delay: hovered ? 0.12 * i : 0, ease: "easeOut" }}
-              className={[
-                "max-w-[80%] rounded-lg px-2.5 py-1.5 text-[11px] leading-snug",
-                m.from === "me"
-                  ? "ml-auto bg-purple-300/25 text-white/90 border border-purple-200/20"
-                  : "bg-white/10 text-white/80 border border-white/10",
-              ].join(" ")}
-            >
-              {m.text}
-            </motion.div>
+            <AnimatePresence key={i}>
+              {revealed > i && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8, scale: 0.9 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ type: "spring", stiffness: 420, damping: 26 }}
+                  className={[
+                    "max-w-[80%] rounded-2xl px-2.5 py-1.5 text-[11px] leading-snug",
+                    m.from === "me"
+                      ? "ml-auto bg-purple-300/25 text-white/90 border border-purple-200/20 rounded-br-sm"
+                      : "bg-white/10 text-white/80 border border-white/10 rounded-bl-sm",
+                  ].join(" ")}
+                >
+                  {m.text}
+                </motion.div>
+              )}
+            </AnimatePresence>
           ))}
+
+          {/* typing indicator */}
+          <AnimatePresence>
+            {typing && revealed < messages.length && (
+              <motion.div
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.18 }}
+                className={[
+                  "flex w-fit items-center gap-1 rounded-2xl px-2.5 py-2",
+                  messages[revealed]?.from === "me"
+                    ? "ml-auto bg-purple-300/20 rounded-br-sm"
+                    : "bg-white/10 rounded-bl-sm",
+                ].join(" ")}
+              >
+                {[0, 1, 2].map((d) => (
+                  <motion.span
+                    key={d}
+                    className="h-1.5 w-1.5 rounded-full bg-white/60"
+                    animate={{ opacity: [0.3, 1, 0.3], y: [0, -2, 0] }}
+                    transition={{ duration: 0.9, repeat: Infinity, delay: d * 0.15 }}
+                  />
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
-        {/* workout ticker */}
-        <div className="mt-2.5 rounded-md border border-white/10 bg-black/40 px-2.5 py-1.5 flex items-center justify-between">
-          <span className="text-[10px] text-white/55">Back Squat</span>
-          <span className="text-[11px] text-white/90 font-medium tabular-nums">
-            {reps} / 12 reps
-          </span>
+        {/* workout log with rep ring */}
+        <div className="mt-2.5 rounded-md border border-white/10 bg-black/40 px-2.5 py-2 flex items-center justify-between">
+          <div>
+            <div className="text-[11px] text-white/85 font-medium">Back Squat</div>
+            <div className="text-[9px] text-white/45">set 3 of 4</div>
+          </div>
+          <div className="relative h-10 w-10">
+            <svg viewBox="0 0 40 40" className="h-10 w-10 -rotate-90">
+              <circle cx="20" cy="20" r={R} fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="3.5" />
+              <motion.circle
+                cx="20"
+                cy="20"
+                r={R}
+                fill="none"
+                stroke="#c084fc"
+                strokeWidth="3.5"
+                strokeLinecap="round"
+                strokeDasharray={C}
+                initial={false}
+                animate={{ strokeDashoffset: C - (reps / 12) * C }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+              />
+            </svg>
+            <div className="absolute inset-0 flex items-center justify-center text-[10px] font-semibold text-white/90 tabular-nums">
+              {reps}
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1185,11 +1188,11 @@ function FlextasyPhone({ hovered }: { hovered: boolean }) {
         <span className="text-white/55">Spring Boot backend</span>
         <motion.span
           initial={false}
-          animate={{ opacity: hovered ? 1 : 0, y: hovered ? 0 : 6 }}
-          transition={{ duration: 0.16 }}
+          animate={{ opacity: reps >= 12 ? 1 : 0, y: reps >= 12 ? 0 : 6 }}
+          transition={{ duration: 0.2 }}
           className="text-white/75"
         >
-          set logged → synced
+          set logged, synced
         </motion.span>
       </div>
     </div>
@@ -1206,9 +1209,50 @@ function HuddleThread({ hovered }: { hovered: boolean }) {
     []
   );
 
-  const score = hovered
-    ? { line: "ISU 81 - KU 78", clock: "00:24 Q4" }
-    : { line: "ISU 74 - KU 75", clock: "03:11 Q4" };
+  const [isu, setIsu] = React.useState(74);
+  const [ku, setKu] = React.useState(75);
+  const [revealed, setRevealed] = React.useState(0);
+  const [likes, setLikes] = React.useState(128);
+
+  React.useEffect(() => {
+    if (!hovered) {
+      setIsu(74);
+      setKu(75);
+      setRevealed(0);
+      setLikes(128);
+      return;
+    }
+    const timers: number[] = [];
+    // roll the score up
+    timers.push(window.setTimeout(() => setKu(78), 400));
+    timers.push(window.setTimeout(() => setIsu(78), 900));
+    timers.push(window.setTimeout(() => setIsu(81), 1500));
+    // stream posts in
+    posts.forEach((_, i) =>
+      timers.push(window.setTimeout(() => setRevealed(i + 1), 500 + i * 550))
+    );
+    // likes tick up
+    const iv = window.setInterval(() => setLikes((l) => l + Math.floor(Math.random() * 4) + 1), 300);
+    timers.push(iv);
+    return () => timers.forEach((t) => window.clearTimeout(t));
+  }, [hovered, posts]);
+
+  const RollNum = ({ n }: { n: number }) => (
+    <span className="relative inline-block w-[2ch] overflow-hidden text-right align-top">
+      <AnimatePresence mode="popLayout" initial={false}>
+        <motion.span
+          key={n}
+          initial={{ y: -12, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: 12, opacity: 0 }}
+          transition={{ type: "spring", stiffness: 500, damping: 30 }}
+          className="inline-block tabular-nums"
+        >
+          {n}
+        </motion.span>
+      </AnimatePresence>
+    </span>
+  );
 
   return (
     <div className="mt-3 rounded-md border border-white/15 bg-white/5 p-3 relative overflow-hidden">
@@ -1228,42 +1272,43 @@ function HuddleThread({ hovered }: { hovered: boolean }) {
         <motion.div
           initial={false}
           animate={{ opacity: hovered ? 1 : 0.7 }}
-          className="rounded-full border border-white/15 bg-black/40 px-2 py-0.5 text-[10px] text-white/70"
+          className="flex items-center gap-1.5 rounded-full border border-white/15 bg-black/40 px-2 py-0.5 text-[10px] text-white/70"
         >
+          <motion.span
+            className="h-1.5 w-1.5 rounded-full bg-red-400"
+            animate={{ opacity: hovered ? [1, 0.3, 1] : 1 }}
+            transition={{ duration: 1.2, repeat: hovered ? Infinity : 0 }}
+          />
           LIVE
         </motion.div>
       </div>
 
       {/* score ticker */}
       <div className="relative mt-2 rounded-md border border-white/10 bg-black/40 px-2.5 py-1.5 flex items-center justify-between">
-        <motion.span
-          key={score.line}
-          initial={{ opacity: 0, y: -3 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.18 }}
-          className="text-[11px] text-white/90 font-medium tabular-nums"
-        >
-          {score.line}
-        </motion.span>
-        <span className="text-[10px] text-white/55 tabular-nums">{score.clock}</span>
+        <span className="text-[11px] text-white/90 font-medium">
+          ISU <RollNum n={isu} /> <span className="text-white/40">-</span> <RollNum n={ku} /> KU
+        </span>
+        <span className="text-[10px] text-white/55 tabular-nums">
+          {hovered ? "00:24 Q4" : "03:11 Q4"}
+        </span>
       </div>
 
       {/* thread */}
-      <div className="relative mt-2 space-y-1.5 min-h-[88px]">
+      <div className="relative mt-2 space-y-1.5 min-h-[92px]">
         {posts.map((p, i) => (
-          <motion.div
-            key={i}
-            initial={false}
-            animate={{
-              opacity: hovered ? 1 : i === 0 ? 0.7 : 0,
-              x: hovered ? 0 : -8,
-            }}
-            transition={{ duration: 0.22, delay: hovered ? 0.13 * i : 0, ease: "easeOut" }}
-            className="flex items-start gap-2 rounded-md border border-white/10 bg-white/[0.04] px-2.5 py-1.5"
-          >
-            <span className="text-[10px] text-sky-200/80 shrink-0">{p.user}</span>
-            <span className="text-[11px] text-white/80 leading-snug">{p.text}</span>
-          </motion.div>
+          <AnimatePresence key={i}>
+            {revealed > i && (
+              <motion.div
+                initial={{ opacity: 0, x: -10, scale: 0.96 }}
+                animate={{ opacity: 1, x: 0, scale: 1 }}
+                transition={{ type: "spring", stiffness: 380, damping: 26 }}
+                className="flex items-start gap-2 rounded-md border border-white/10 bg-white/[0.04] px-2.5 py-1.5"
+              >
+                <span className="text-[10px] text-sky-200/80 shrink-0">{p.user}</span>
+                <span className="text-[11px] text-white/80 leading-snug">{p.text}</span>
+              </motion.div>
+            )}
+          </AnimatePresence>
         ))}
       </div>
 
@@ -1271,11 +1316,11 @@ function HuddleThread({ hovered }: { hovered: boolean }) {
         <span className="text-white/55">fan chatter, live</span>
         <motion.span
           initial={false}
-          animate={{ opacity: hovered ? 1 : 0, y: hovered ? 0 : 6 }}
+          animate={{ opacity: hovered ? 1 : 0 }}
           transition={{ duration: 0.16 }}
-          className="text-white/75"
+          className="flex items-center gap-1 text-sky-200/80 tabular-nums"
         >
-          thread heating up…
+          <span className="text-rose-300">♥</span> {likes}
         </motion.span>
       </div>
     </div>
@@ -1292,8 +1337,9 @@ function FaultLineScene({ hovered }: { hovered: boolean }) {
     []
   );
 
-  // step: 0 idle, 1 paged, 2 investigating, 3 root cause, 4 pending approval
+  // step: 0 idle, 1 paged, 2 metrics, 3 logs, 4 traces + root cause, 5 approval
   const [step, setStep] = React.useState(0);
+  const confidence = [8, 22, 44, 66, 90, 94][Math.min(step, 5)];
 
   React.useEffect(() => {
     if (!hovered) {
@@ -1301,10 +1347,11 @@ function FaultLineScene({ hovered }: { hovered: boolean }) {
       return;
     }
     const timers = [
-      window.setTimeout(() => setStep(1), 120),
-      window.setTimeout(() => setStep(2), 620),
-      window.setTimeout(() => setStep(3), 1500),
-      window.setTimeout(() => setStep(4), 2050),
+      window.setTimeout(() => setStep(1), 150),
+      window.setTimeout(() => setStep(2), 650),
+      window.setTimeout(() => setStep(3), 1100),
+      window.setTimeout(() => setStep(4), 1650),
+      window.setTimeout(() => setStep(5), 2250),
     ];
     return () => timers.forEach((t) => window.clearTimeout(t));
   }, [hovered]);
@@ -1358,40 +1405,75 @@ function FaultLineScene({ hovered }: { hovered: boolean }) {
         </div>
       </div>
 
-      {/* tool nodes */}
-      <div className="relative mt-2 grid grid-cols-3 gap-2">
-        {nodes.map((n, i) => {
-          const scanning = step === 2;
-          return (
-            <motion.div
-              key={n.key}
-              initial={false}
-              animate={{
-                borderColor: scanning
-                  ? "rgba(255,255,255,0.35)"
-                  : "rgba(255,255,255,0.1)",
-                opacity: scanning ? [0.5, 1, 0.5] : step >= 3 ? 0.5 : 0.8,
-              }}
-              transition={{
-                duration: 0.6,
-                repeat: scanning ? Infinity : 0,
-                delay: scanning ? i * 0.18 : 0,
-              }}
-              className="rounded-md border bg-white/[0.04] px-2 py-1.5 text-center text-[10px] text-white/70"
-            >
-              {n.label}
-            </motion.div>
-          );
-        })}
+      {/* tool nodes with a pulse traveling the trace line */}
+      <div className="relative mt-3">
+        {/* connecting line + traveling pulse */}
+        <div className="absolute left-[16.6%] right-[16.6%] top-[13px] h-px bg-white/10" />
+        {step >= 2 && step <= 4 && (
+          <motion.div
+            className="absolute top-[10px] h-1.5 w-1.5 rounded-full bg-rose-300 shadow-[0_0_8px_rgba(253,164,175,0.9)]"
+            initial={{ left: "16.6%" }}
+            animate={{ left: ["16.6%", "50%", "83.4%"] }}
+            transition={{ duration: 1.4, ease: "easeInOut", repeat: Infinity }}
+          />
+        )}
+
+        <div className="relative grid grid-cols-3 gap-2">
+          {nodes.map((n, i) => {
+            const active = step === i + 2;
+            const done = step > i + 2;
+            return (
+              <motion.div
+                key={n.key}
+                initial={false}
+                animate={{
+                  borderColor: active
+                    ? "rgba(253,164,175,0.6)"
+                    : done
+                    ? "rgba(163,230,53,0.4)"
+                    : "rgba(255,255,255,0.1)",
+                  backgroundColor: active ? "rgba(253,164,175,0.10)" : "rgba(255,255,255,0.04)",
+                }}
+                transition={{ duration: 0.25 }}
+                className="rounded-md border px-2 py-1.5 text-center text-[10px] text-white/75"
+              >
+                <span className="inline-flex items-center gap-1">
+                  {done && <span className="text-lime-300">✓</span>}
+                  {n.label}
+                </span>
+              </motion.div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* confidence meter */}
+      <div className="relative mt-3">
+        <div className="flex items-center justify-between text-[10px] text-white/50">
+          <span>diagnosis confidence</span>
+          <motion.span
+            key={confidence}
+            initial={{ opacity: 0.4 }}
+            animate={{ opacity: 1 }}
+            className="tabular-nums text-white/75"
+          >
+            {confidence}%
+          </motion.span>
+        </div>
+        <div className="mt-1 h-1.5 rounded-full bg-white/10 overflow-hidden">
+          <motion.div
+            className="h-full rounded-full bg-gradient-to-r from-rose-400/70 to-lime-300/70"
+            initial={false}
+            animate={{ width: `${confidence}%` }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+          />
+        </div>
       </div>
 
       {/* root cause */}
       <motion.div
         initial={false}
-        animate={{
-          opacity: step >= 3 ? 1 : 0,
-          y: step >= 3 ? 0 : 6,
-        }}
+        animate={{ opacity: step >= 4 ? 1 : 0, y: step >= 4 ? 0 : 6 }}
         transition={{ duration: 0.28, ease: "easeOut" }}
         className="relative mt-2 rounded-md border border-amber-200/30 bg-amber-300/10 px-2.5 py-1.5"
       >
@@ -1406,7 +1488,7 @@ function FaultLineScene({ hovered }: { hovered: boolean }) {
         <span className="text-white/55">agent diagnosing</span>
         <motion.span
           initial={false}
-          animate={{ opacity: step >= 4 ? 1 : 0, y: step >= 4 ? 0 : 6 }}
+          animate={{ opacity: step >= 5 ? 1 : 0, y: step >= 5 ? 0 : 6 }}
           transition={{ duration: 0.2 }}
           className="rounded-full border border-white/15 bg-black/40 px-2 py-0.5 text-[10px] text-white/75"
         >
@@ -1417,32 +1499,68 @@ function FaultLineScene({ hovered }: { hovered: boolean }) {
   );
 }
 
+function PixelWrestler({ singlet, trunks = "#2f2f33" }: { singlet: string; trunks?: string }) {
+  const skin = "#e8b98f";
+  return (
+    <g shapeRendering="crispEdges">
+      {/* shadow */}
+      <ellipse cx="0" cy="1" rx="9" ry="2" fill="rgba(0,0,0,0.28)" />
+      {/* hair + head */}
+      <rect x="-3" y="-31" width="6" height="2" fill="#2b2b2b" />
+      <rect x="-3" y="-29" width="6" height="6" fill={skin} />
+      {/* torso singlet */}
+      <rect x="-4" y="-23" width="8" height="11" fill={singlet} />
+      <rect x="-4" y="-23" width="2" height="7" fill="rgba(0,0,0,0.15)" />
+      {/* arms */}
+      <rect x="-7" y="-22" width="3" height="8" fill={skin} />
+      <rect x="4" y="-21" width="8" height="3" fill={skin} />
+      {/* trunks */}
+      <rect x="-4" y="-12" width="8" height="3" fill={trunks} />
+      {/* legs */}
+      <rect x="-4" y="-9" width="3" height="7" fill={skin} />
+      <rect x="1" y="-9" width="3" height="7" fill={skin} />
+      {/* shoes */}
+      <rect x="-4" y="-2" width="3" height="2" fill="#22201e" />
+      <rect x="1" y="-2" width="3" height="2" fill="#22201e" />
+    </g>
+  );
+}
+
 function MatVisionScene({ hovered }: { hovered: boolean }) {
   const events = useMemo(
     () => [
-      { t: 26, label: "Shot" },
-      { t: 52, label: "TD" },
-      { t: 78, label: "Esc" },
+      { t: 24, label: "Shot", color: "#7dd3fc" },
+      { t: 50, label: "TD", color: "#fb923c" },
+      { t: 80, label: "Esc", color: "#a3e635" },
     ],
     []
   );
 
-  const [takedowns, setTakedowns] = React.useState(0);
+  // step drives the reveal: which events are detected + stat tallies
   const [shown, setShown] = React.useState(0);
+  const [flash, setFlash] = React.useState<string | null>(null);
+  const stats = useMemo(
+    () => ({ shots: shown >= 1 ? 1 : 0, td: shown >= 2 ? 1 : 0, esc: shown >= 3 ? 1 : 0 }),
+    [shown]
+  );
 
   React.useEffect(() => {
     if (!hovered) {
-      setTakedowns(0);
       setShown(0);
+      setFlash(null);
       return;
     }
-    const timers = [
-      window.setTimeout(() => setShown(1), 400),
-      window.setTimeout(() => setShown(2), 900),
+    const fire = (n: number, label: string, at: number) => [
       window.setTimeout(() => {
-        setShown(3);
-        setTakedowns(1);
-      }, 1400),
+        setShown(n);
+        setFlash(label);
+      }, at),
+      window.setTimeout(() => setFlash(null), at + 700),
+    ];
+    const timers = [
+      ...fire(1, "Shot detected", 500),
+      ...fire(2, "Takedown", 1150),
+      ...fire(3, "Escape", 1800),
     ];
     return () => timers.forEach((t) => window.clearTimeout(t));
   }, [hovered]);
@@ -1469,76 +1587,105 @@ function MatVisionScene({ hovered }: { hovered: boolean }) {
       {/* mat / tracking view */}
       <div className="relative mt-2 rounded-md border border-white/10 bg-black/40 overflow-hidden">
         <svg viewBox="0 0 260 96" className="block w-full h-[90px]">
-          {/* mat rings */}
-          <circle cx="130" cy="48" r="40" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="1.5" />
-          <circle cx="130" cy="48" r="22" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="1.5" />
+          {/* mat */}
+          <rect x="0" y="0" width="260" height="96" fill="#132a3a" />
+          <circle cx="130" cy="60" r="42" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.09)" strokeWidth="1.5" />
+          <circle cx="130" cy="60" r="24" fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="1.5" />
+          <line x1="12" y1="80" x2="248" y2="80" stroke="rgba(255,255,255,0.06)" strokeWidth="1" />
 
-          {/* wrestler A tracked box + skeleton */}
+          {/* wrestler A (cyan), attacker */}
           <motion.g
+            style={{ transformOrigin: "120px 80px" }}
             initial={false}
-            animate={{ x: hovered ? [0, 10, 4] : 0, y: hovered ? [0, -4, 2] : 0 }}
-            transition={{ duration: 2, repeat: hovered ? Infinity : 0, repeatType: "mirror" }}
+            animate={{
+              x: hovered ? [0, 6, 12, 12, 2, 0] : 0,
+              y: hovered ? [0, 1, 6, 8, 2, 0] : 0,
+              rotate: hovered ? [0, 4, 12, 14, 4, 0] : 0,
+            }}
+            transition={{ duration: 3.2, times: [0, 0.22, 0.42, 0.62, 0.8, 1], repeat: hovered ? Infinity : 0, ease: "easeInOut" }}
           >
-            <rect x="96" y="34" width="26" height="34" rx="3" fill="none" stroke="rgba(129,212,250,0.7)" strokeWidth="1.4" />
-            <circle cx="109" cy="40" r="3" fill="rgba(129,212,250,0.9)" />
-            <line x1="109" y1="43" x2="109" y2="56" stroke="rgba(129,212,250,0.8)" strokeWidth="1.4" />
-            <line x1="109" y1="47" x2="102" y2="53" stroke="rgba(129,212,250,0.8)" strokeWidth="1.4" />
-            <line x1="109" y1="47" x2="117" y2="52" stroke="rgba(129,212,250,0.8)" strokeWidth="1.4" />
-            <line x1="109" y1="56" x2="104" y2="65" stroke="rgba(129,212,250,0.8)" strokeWidth="1.4" />
-            <line x1="109" y1="56" x2="115" y2="65" stroke="rgba(129,212,250,0.8)" strokeWidth="1.4" />
+            <g transform="translate(120,80)">
+              <PixelWrestler singlet="#38bdf8" />
+            </g>
           </motion.g>
 
-          {/* wrestler B tracked box + skeleton */}
+          {/* wrestler B (orange), defender, faces left */}
           <motion.g
+            style={{ transformOrigin: "140px 80px" }}
             initial={false}
-            animate={{ x: hovered ? [0, -8, -3] : 0, y: hovered ? [0, 3, -2] : 0 }}
-            transition={{ duration: 2, repeat: hovered ? Infinity : 0, repeatType: "mirror" }}
+            animate={{
+              x: hovered ? [0, -4, -8, -10, -3, 0] : 0,
+              y: hovered ? [0, 0, 2, 12, 3, 0] : 0,
+              rotate: hovered ? [0, -3, -8, -32, -8, 0] : 0,
+            }}
+            transition={{ duration: 3.2, times: [0, 0.22, 0.42, 0.62, 0.8, 1], repeat: hovered ? Infinity : 0, ease: "easeInOut" }}
           >
-            <rect x="140" y="36" width="26" height="34" rx="3" fill="none" stroke="rgba(251,146,60,0.7)" strokeWidth="1.4" />
-            <circle cx="153" cy="42" r="3" fill="rgba(251,146,60,0.9)" />
-            <line x1="153" y1="45" x2="153" y2="58" stroke="rgba(251,146,60,0.8)" strokeWidth="1.4" />
-            <line x1="153" y1="49" x2="146" y2="54" stroke="rgba(251,146,60,0.8)" strokeWidth="1.4" />
-            <line x1="153" y1="49" x2="161" y2="55" stroke="rgba(251,146,60,0.8)" strokeWidth="1.4" />
-            <line x1="153" y1="58" x2="148" y2="66" stroke="rgba(251,146,60,0.8)" strokeWidth="1.4" />
-            <line x1="153" y1="58" x2="159" y2="66" stroke="rgba(251,146,60,0.8)" strokeWidth="1.4" />
+            <g transform="translate(140,80) scale(-1,1)">
+              <PixelWrestler singlet="#fb923c" />
+            </g>
           </motion.g>
         </svg>
+
+        {/* event detected flash chip */}
+        <AnimatePresence>
+          {flash && (
+            <motion.div
+              key={flash}
+              initial={{ opacity: 0, y: 6, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.2 }}
+              className="absolute left-1/2 top-2 -translate-x-1/2 rounded-full border border-orange-200/40 bg-black/70 px-2.5 py-0.5 text-[10px] text-orange-100/90 backdrop-blur-sm"
+            >
+              {flash}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
-      {/* timeline with events */}
-      <div className="relative mt-2">
+      {/* event track */}
+      <div className="relative mt-3">
         <div className="relative h-1.5 rounded-full bg-white/10">
           <motion.div
-            className="absolute inset-y-0 left-0 rounded-full bg-orange-300/60"
+            className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-sky-300/50 via-orange-300/60 to-lime-300/50"
             initial={false}
             animate={{ width: hovered ? "100%" : "0%" }}
-            transition={{ duration: 1.6, ease: "linear" }}
+            transition={{ duration: 1.9, ease: "linear" }}
           />
           {events.map((e, i) => (
             <motion.span
               key={e.label}
-              className="absolute -top-1 h-3.5 w-3.5 -translate-x-1/2 rounded-full border border-orange-200/40 bg-black/70 text-[7px] leading-[13px] text-center text-orange-100/90"
-              style={{ left: `${e.t}%` }}
+              className="absolute -top-[3px] h-2.5 w-2.5 -translate-x-1/2 rounded-full border-2 border-black/60"
+              style={{ left: `${e.t}%`, background: e.color }}
               initial={false}
-              animate={{ opacity: shown > i ? 1 : 0, scale: shown > i ? 1 : 0.5 }}
-              transition={{ duration: 0.2 }}
-            >
-              •
-            </motion.span>
+              animate={{
+                opacity: shown > i ? 1 : 0.25,
+                scale: shown > i ? [0.4, 1.4, 1] : 0.6,
+              }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+            />
           ))}
+        </div>
+        <div className="mt-1 flex justify-between text-[9px] text-white/40">
+          <span>0:00</span>
+          <span>full match</span>
         </div>
       </div>
 
-      <div className="relative mt-2 min-h-[16px] text-[11px] text-white/60 flex items-center justify-between">
-        <span className="text-white/55">evidence-grounded</span>
-        <motion.span
-          initial={false}
-          animate={{ opacity: hovered ? 1 : 0, y: hovered ? 0 : 6 }}
-          transition={{ duration: 0.16 }}
-          className="text-white/75 tabular-nums"
-        >
-          takedowns: {takedowns}
-        </motion.span>
+      {/* stat tally */}
+      <div className="relative mt-2 grid grid-cols-3 gap-2">
+        {[
+          { k: "Shots", v: stats.shots, c: "#7dd3fc" },
+          { k: "Takedowns", v: stats.td, c: "#fb923c" },
+          { k: "Escapes", v: stats.esc, c: "#a3e635" },
+        ].map((s) => (
+          <div key={s.k} className="rounded-md border border-white/10 bg-white/[0.03] px-2 py-1 text-center">
+            <div className="text-sm font-semibold tabular-nums" style={{ color: s.c }}>
+              {s.v}
+            </div>
+            <div className="text-[9px] text-white/50">{s.k}</div>
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -1922,7 +2069,7 @@ export default function Home() {
                       className="mt-6 grid gap-5 md:grid-cols-2"
                     >
                       {/* MatVision */}
-                      <ProjectCard>
+                      <ProjectCard accent="#fb923c">
                         <div
                           onMouseEnter={() => setMatHovered(true)}
                           onMouseLeave={() => setMatHovered(false)}
@@ -1967,7 +2114,7 @@ export default function Home() {
                       </ProjectCard>
 
                       {/* FaultLine */}
-                      <ProjectCard>
+                      <ProjectCard accent="#fb7185">
                         <div
                           onMouseEnter={() => setFaultHovered(true)}
                           onMouseLeave={() => setFaultHovered(false)}
@@ -2012,7 +2159,7 @@ export default function Home() {
                       </ProjectCard>
 
                       {/* Sports Betting Engine */}
-                      <ProjectCard>
+                      <ProjectCard accent="#34d399">
                         <div
                           onMouseEnter={() => setSportsHovered(true)}
                           onMouseLeave={() => setSportsHovered(false)}
@@ -2061,7 +2208,7 @@ export default function Home() {
                       </ProjectCard>
 
                       {/* InsiderEdge */}
-                      <ProjectCard>
+                      <ProjectCard accent="#fbbf24">
                         <div
                           onMouseEnter={() => setInsiderHovered(true)}
                           onMouseLeave={() => setInsiderHovered(false)}
@@ -2103,7 +2250,7 @@ export default function Home() {
                       </ProjectCard>
 
                       {/* Flextasy */}
-                      <ProjectCard>
+                      <ProjectCard accent="#c084fc">
                         <div
                           onMouseEnter={() => setFlexHovered(true)}
                           onMouseLeave={() => setFlexHovered(false)}
@@ -2134,7 +2281,7 @@ export default function Home() {
                       </ProjectCard>
 
                       {/* The Huddle */}
-                      <ProjectCard>
+                      <ProjectCard accent="#38bdf8">
                         <div
                           onMouseEnter={() => setHuddleHovered(true)}
                           onMouseLeave={() => setHuddleHovered(false)}
@@ -2165,7 +2312,7 @@ export default function Home() {
                       </ProjectCard>
 
                       {/* N&M Landscaping */}
-                      <ProjectCard>
+                      <ProjectCard accent="#4ade80">
                         <div
                           onMouseEnter={() => setLandHovered(true)}
                           onMouseLeave={() => setLandHovered(false)}
@@ -2208,7 +2355,7 @@ export default function Home() {
                       </ProjectCard>
 
                       {/* MathMedic */}
-                      <ProjectCard>
+                      <ProjectCard accent="#2dd4bf">
                         <div
                           onMouseEnter={() => setMathHovered(true)}
                           onMouseLeave={() => setMathHovered(false)}
@@ -2239,7 +2386,7 @@ export default function Home() {
                       </ProjectCard>
 
                       {/* Tetris */}
-                      <ProjectCard>
+                      <ProjectCard accent="#818cf8">
                         <div
                           onMouseEnter={() => setTetrisHovered(true)}
                           onMouseLeave={() => setTetrisHovered(false)}
@@ -2272,7 +2419,7 @@ export default function Home() {
                       </ProjectCard>
 
                       {/* Latent Space Portfolio */}
-                      <ProjectCard>
+                      <ProjectCard accent="#a78bfa">
                         <div>
                           <div className="font-medium">
                             The Latent Space | Personal Portfolio
