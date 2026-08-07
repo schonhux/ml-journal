@@ -1939,16 +1939,16 @@ export default function Home() {
         <span className="absolute -left-[27px] md:-left-[31px] top-7 h-2.5 w-2.5 rounded-full bg-red-400 shadow-[0_0_10px_rgba(248,113,113,0.8)]" />
 
         <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
+          <div className="min-w-0">
             <div className="font-semibold text-lg">
-              Lenovo | AI Reliability &amp; DevOps Intern
+              Lenovo | Qira AI Platform
             </div>
             <div className="mt-1 text-sm text-white/70">
-              Qira AI Platform
+              AI Reliability &amp; DevOps Intern
             </div>
           </div>
 
-          <div className="flex flex-col items-end gap-1.5">
+          <div className="flex shrink-0 flex-col items-end gap-1.5">
             <span className="inline-flex items-center gap-1.5 rounded-full border border-red-400/40 bg-red-400/10 px-2.5 py-0.5 text-[11px] font-medium text-red-200">
               Internship
             </span>
@@ -1984,19 +1984,6 @@ export default function Home() {
             Investigated and helped fix 8 defects in the Expedia integration, shipping 6 fixes and 3 alerts and proving the slowdown was on the partner side, which cut flight-search P95 from 17.1s to 8.3s.
           </li>
         </ul>
-
-        <div className="chip-row mt-4 flex flex-wrap gap-1.5">
-          {["Rust", "OpenTelemetry", "Prometheus", "Grafana", "Azure", "Agentic AI", "SRE"].map(
-            (t) => (
-              <span
-                key={t}
-                className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[11px] text-white/70"
-              >
-                {t}
-              </span>
-            )
-          )}
-        </div>
       </motion.li>
 
       {/* BERKLEY */}
@@ -2006,22 +1993,52 @@ export default function Home() {
       >
         <span className="absolute -left-[27px] md:-left-[31px] top-7 h-2.5 w-2.5 rounded-full bg-emerald-300 shadow-[0_0_10px_rgba(110,231,183,0.8)]" />
         <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
+          <div className="min-w-0">
             <div className="font-semibold text-lg">
-              Berkley Technology Services | Site Reliability Engineer
+              Berkley Technology Services
             </div>
             <div className="mt-1 text-sm text-white/70">
-              Reliability engineering, observability strategy, and automation across large-scale legacy systems.
+              Site Reliability Engineer (SRE) Intern 
             </div>
           </div>
 
-          <span className="text-xs text-white/50 tabular-nums">
-            May 2025 – April 2026
-          </span>
+          <div className="flex shrink-0 flex-col items-end gap-1.5">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300/40 bg-emerald-300/10 px-2.5 py-0.5 text-[11px] font-medium text-emerald-200">
+              Internship
+            </span>
+            <span className="text-xs text-white/50 tabular-nums">
+              May 2025 – April 2026
+            </span>
+          </div>
+        </div>
+
+        {/* INTERN */}
+        <div className="mt-4">
+          <div className="text-sm text-white/70 font-medium">
+            Intern • May 2025 – Aug 2025
+          </div>
+
+          <ul className="mt-3 list-disc pl-5 text-sm text-white/85 space-y-2">
+            <li>
+              Engineered secure credential-rotation automation integrating PowerShell, SQL, and REST APIs with Active Directory, Delinea, and SolarWinds, managing 500+ service accounts with 100% audit compliance.
+            </li>
+            <li>
+              Designed a secure RPA-based credential rotation system for SolarWinds WPM synthetic monitoring, eliminating manual updates where no supported API existed.
+            </li>
+            <li>
+              Built a hybrid automation architecture using Power Automate Cloud + Desktop to orchestrate UI-level credential updates through an RDP-launched fat client, with Delinea Secret Server APIs integrated via Microsoft Data Gateway.
+            </li>
+            <li>
+              Developed reusable Ansible and PowerShell automation to standardize system configurations, reducing manual operational effort by 50% and configuration drift by 80%.
+            </li>
+            <li>
+              Facilitated weekly stakeholder syncs across engineering, security, and operations, clarifying ownership, accelerating issue resolution, and strengthening knowledge sharing.
+            </li>
+          </ul>
         </div>
 
         {/* CO-OP */}
-        <div className="mt-4">
+        <div className="mt-5 pt-5 border-t border-white/10">
           <div className="text-sm text-white/70 font-medium">
             Co-Op • Aug 2025 – April 2026
           </div>
@@ -2047,31 +2064,6 @@ export default function Home() {
             </li>
           </ul>
         </div>
-
-        {/* INTERN */}
-        <div className="mt-5 pt-5 border-t border-white/10">
-          <div className="text-sm text-white/70 font-medium">
-            Intern • May 2025 – Aug 2025
-          </div>
-
-          <ul className="mt-3 list-disc pl-5 text-sm text-white/85 space-y-2">
-            <li>
-              Engineered secure credential-rotation automation integrating PowerShell, SQL, and REST APIs with Active Directory, Delinea, and SolarWinds, managing 500+ service accounts with 100% audit compliance.
-            </li>
-            <li>
-              Designed a secure RPA-based credential rotation system for SolarWinds WPM synthetic monitoring, eliminating manual updates where no supported API existed.
-            </li>
-            <li>
-              Built a hybrid automation architecture using Power Automate Cloud + Desktop to orchestrate UI-level credential updates through an RDP-launched fat client, with Delinea Secret Server APIs integrated via Microsoft Data Gateway.
-            </li>
-            <li>
-              Developed reusable Ansible and PowerShell automation to standardize system configurations, reducing manual operational effort by 50% and configuration drift by 80%.
-            </li>
-            <li>
-              Facilitated weekly stakeholder syncs across engineering, security, and operations, clarifying ownership, accelerating issue resolution, and strengthening knowledge sharing.
-            </li>
-          </ul>
-        </div>
       </motion.li>
 
       {/* FREELANCE */}
@@ -2081,12 +2073,23 @@ export default function Home() {
       >
         <span className="absolute -left-[27px] md:-left-[31px] top-7 h-2.5 w-2.5 rounded-full bg-sky-300 shadow-[0_0_10px_rgba(125,211,252,0.8)]" />
         <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="font-semibold text-lg">
-            Freelance Web Developer | Self-Employed
+          <div className="min-w-0">
+            <div className="font-semibold text-lg">
+              Self-Employed, Freelance Web Developer
+            </div>
+            <div className="mt-1 text-sm text-white/70">
+              Web Development | SEO Optimization
+            </div>
           </div>
-          <span className="text-xs text-white/50 tabular-nums">
-            Feb 2025 – Present
-          </span>
+
+          <div className="flex shrink-0 flex-col items-end gap-1.5">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-sky-300/40 bg-sky-300/10 px-2.5 py-0.5 text-[11px] font-medium text-sky-200">
+              Freelance
+            </span>
+            <span className="text-xs text-white/50 tabular-nums">
+              Feb 2025 – Present
+            </span>
+          </div>
         </div>
 
         {/* DT GROUP */}
@@ -2095,7 +2098,7 @@ export default function Home() {
             DT Group LLC | Web Revamp & SEO Optimization
           </div>
           <div className="text-xs text-white/60 mt-0.5">
-            Nov 2025 - Dec 2025
+            Nov 2025 – Dec 2025
           </div>
 
           <ul className="mt-3 list-disc pl-5 text-sm text-white/85 space-y-2">
@@ -2114,7 +2117,7 @@ export default function Home() {
             N&amp;M Landscaping LLC | Website
           </div>
           <div className="text-xs text-white/60 mt-0.5">
-            Feb 2025 - Mar 2025
+            Feb 2025 – Mar 2025
           </div>
 
           <ul className="mt-3 list-disc pl-5 text-sm text-white/85 space-y-2">
