@@ -2170,12 +2170,6 @@ export default function Home() {
                         </div>
 
                         <div className="mt-4 flex gap-3">
-                          <span
-                            className="inline-block cursor-default rounded-md border border-white/20 px-4 py-1.5 text-sm font-medium text-white/40"
-                            title="Demo coming soon"
-                          >
-                            Demo
-                          </span>
                           <a
                             href="https://github.com/schonhux/MatVision"
                             target="_blank"
@@ -2215,12 +2209,6 @@ export default function Home() {
                         </div>
 
                         <div className="mt-4 flex gap-3">
-                          <span
-                            className="inline-block cursor-default rounded-md border border-white/20 px-4 py-1.5 text-sm font-medium text-white/40"
-                            title="Demo coming soon"
-                          >
-                            Demo
-                          </span>
                           <a
                             href="https://github.com/schonhux/FaultLine"
                             target="_blank"
